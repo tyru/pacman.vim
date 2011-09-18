@@ -101,8 +101,6 @@ call add(s:FIELDS, [
 
 let s:CHAR_START_POINT = '+'
 let s:CHAR_FREE_SPACE = ' '
-let s:CHAR_WALL1 = '|'
-let s:CHAR_WALL2 = '-'
 let s:CHAR_FEED = '$'
 
 " No `s:MARK_START_POINT` because
@@ -117,13 +115,11 @@ let [
 
 let s:CHAR_TO_MARK_TYPE_TABLE = {
 \   s:CHAR_FREE_SPACE : s:MARK_FREE_SPACE,
-\   s:CHAR_WALL1      : s:MARK_WALL,
-\   s:CHAR_WALL2      : s:MARK_WALL,
 \   s:CHAR_FEED       : s:MARK_FEED,
 \}
 
 function! s:get_mark_type(c)
-    return s:CHAR_TO_MARK_TYPE_TABLE[a:c]
+    return get(s:CHAR_TO_MARK_TYPE_TABLE, a:c, s:MARK_WALL)
 endfunction
 
 function! s:choose_field()
