@@ -183,7 +183,7 @@ function! s:set_state(state)
     let b:pacman_current_table = s:state_table[s:state]
 endfunction
 " Return empty string for 'on_key()'
-function! s:nop()
+function! s:nop(...)
     return ''
 endfunction
 function! s:create_table(...)
