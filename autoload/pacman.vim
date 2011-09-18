@@ -59,7 +59,7 @@ function! s:create_buffer()
     for key in ['j', 'k', 'h', 'l']
         execute 'nnoremap <buffer><expr>' key 'b:pacman_current_table.on_key('.string(key).')'
     endfor
-    for key in ['0', '^', '$', 'i', 'a', 'A']
+    for key in ['0', '^', '$', 'i', 'a', 'A', '/', '?']
         execute 'nnoremap <buffer>' key '<Nop>'
     endfor
     " Deep-Copy of `s:state_table[s:state]`.
