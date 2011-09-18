@@ -83,6 +83,7 @@ endfunction
 
 
 let s:field = []
+" TODO: Add more fields!
 let s:FIELDS = []
 let s:START_POINT_MARK = '+'
 call add(s:FIELDS, [
