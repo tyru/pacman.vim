@@ -81,7 +81,10 @@ function! s:stop()
     execute s:pacman_bufnr 'bwipeout'
     let s:caller_bufnr = -1
     let s:pacman_bufnr = -1
+    let &updatetime = s:save_updatetime
     let s:save_updatetime = -1
+    let &lazyredraw = s:save_lazyredraw
+    let s:save_lazyredraw = -1
 endfunction
 
 let s:pacman = 0
