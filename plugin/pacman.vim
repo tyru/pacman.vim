@@ -80,10 +80,10 @@ function! s:stop()
 endfunction
 
 let s:pacman = 0
+let s:graph = ['|', '/', '-', '\']
 function! s:main_loop()
-    redraw
     let s:pacman += 1
-    echom 'pacman...' . s:pacman
+    call setline(1, s:graph[s:pacman % 4])
 endfunction
 
 
