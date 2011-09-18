@@ -122,10 +122,12 @@ function! s:get_mark_type(c)
     return get(s:CHAR_TO_MARK_TYPE_TABLE, a:c, s:MARK_WALL)
 endfunction
 
+function! s:rand(n)
+    let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
+    return reltimestr(reltime())[match_end : ] % a:n
+endfunction
 function! s:choose_field()
-    " TODO
-    "let s:field = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
-    let s:field = deepcopy(s:FIELDS[0])
+    let s:field = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
 endfunction
 function! s:initialize_field()
     let start_point_coord = {'x': -1, 'y': -1}
