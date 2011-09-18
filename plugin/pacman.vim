@@ -188,6 +188,12 @@ function! s:state_table.gameover.func()
 endfunction
 " --------- gameover end ---------
 
+" --------- pause ---------
+let s:state_table.pause = {}
+function! s:state_table.pause.func()
+endfunction
+" --------- pause end ---------
+
 command! -bar -bang Pacman call s:start(<bang>0)
 
 
