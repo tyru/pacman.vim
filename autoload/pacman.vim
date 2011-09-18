@@ -38,7 +38,7 @@ function! s:create_buffer()
     " Local options.
     setlocal buftype=nowrite
     setlocal noswapfile
-    setlocal bufhidden=hide
+    setlocal bufhidden=wipe
     setlocal buftype=nofile
     setlocal nonumber
     setlocal nowrap
