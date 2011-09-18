@@ -49,6 +49,9 @@ function! s:create_buffer()
     for key in ['j', 'k', 'h', 'l']
         execute 'nnoremap <buffer><expr>' key 'b:pacman_current_table.on_key('.string(key).')'
     endfor
+    for key in ['0', '^', '$', 'i', 'a', 'A']
+        execute 'nnoremap <buffer><expr>' key '<Nop>'
+    endfor
     " Alias for `s:state_table[s:state]`.
     " because <buffer><expr>-mapping `<SID>state_table[<SID>state].on_key()` causes error.
     let b:pacman_current_table = {}
