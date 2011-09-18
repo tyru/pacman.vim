@@ -85,44 +85,78 @@ endfunction
 let s:field = []
 " TODO: Add more fields!
 let s:FIELDS = []
-let s:START_POINT_MARK = '+'
 call add(s:FIELDS, [
 \   '---------------------------',
-\   '|                         |',
-\   '|  -----  ------  | ----- |',
-\   '|      |          |       |',
-\   '|  |   |     + |  ------- |',
-\   '|  |   -----   |          |',
+\   '|         $$$$$$$$$$$$$$$$|',
+\   '|  -----  ------  | -----$|',
+\   '|      |          |      $|',
+\   '|  |   |     + |  -------$|',
+\   '|  |   -----   |$$$$$$$$$$|',
 \   '|  |       |   |  ------- |',
 \   '|  ------  |   |  ------- |',
 \   '|                         |',
 \   '---------------------------',
 \])
+
+let s:CHAR_START_POINT = '+'
+let s:CHAR_FREE_SPACE = ' '
+let s:CHAR_WALL1 = '|'
+let s:CHAR_WALL2 = '-'
+let s:CHAR_FEED = '$'
+
+" No `s:MARK_START_POINT` because
+" `s:CHAR_START_POINT` is replaced with `s:CHAR_FREE_SPACE`.
+" s:MARK_* constants is only needed for detection of
+" a mark type of a character.
+let [
+\   s:MARK_FREE_SPACE,
+\   s:MARK_WALL,
+\   s:MARK_FEED
+\] = range(3)
+
+let s:CHAR_TO_MARK_TYPE_TABLE = {
+\   s:CHAR_FREE_SPACE : s:MARK_FREE_SPACE,
+\   s:CHAR_WALL1      : s:MARK_WALL,
+\   s:CHAR_WALL2      : s:MARK_WALL,
+\   s:CHAR_FEED       : s:MARK_FEED,
+\}
+
+function! s:get_mark_type(c)
+    return s:CHAR_TO_MARK_TYPE_TABLE[a:c]
+endfunction
+
 function! s:choose_field()
     " TODO
     "let s:field = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
     let s:field = deepcopy(s:FIELDS[0])
 endfunction
 function! s:move_to_start_point()
-    for i in range(len(s:field))
-        for j in range(len(s:field[i]))
-            if s:field[i][j] ==# s:START_POINT_MARK
-                " Rewrite "+" to " ".
-                let s:field =
-                \     (i ==# 0 ? [] : s:field[: i - 1])
-                \   + [(j ==# 0 ? '' : s:field[i][: j - 1])
-                \       . ' '
-                \       . (j ==# len(s:field[i]) - 1 ? '' : s:field[i][j + 1 :])]
-                \   + (i ==# len(s:field) - 1 ? [] : s:field[i + 1 :])
-                " Vim does not support assignment to a character of String...
-                "let s:field[i][j]  = '+'
-
+    for y in range(len(s:field))
+        for x in range(len(s:field[y]))
+            if s:field[y][x] ==# s:CHAR_START_POINT
+                " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
+                call s:field_set_char(s:CHAR_FREE_SPACE, x, y)
                 " Move cursor to free space. (not wall)
-                call cursor(i + 1, j + 1)
+                call cursor(y + 1, x + 1)
                 break
             endif
         endfor
     endfor
+endfunction
+
+" Vim does not support assignment to a character of String...
+"let s:field[a:y][a:x]  = s:CHAR_START_POINT
+function! s:field_set_char(char, x, y)
+    if a:y <# 0 || a:y >=# len(s:field)
+    \   || a:x <# 0 || a:x >=# len(s:field[a:y])
+    \   || strlen(a:char) !=# 1
+        return
+    endif
+    let above = (a:y ==# 0 ? [] : s:field[: a:y - 1])
+    let middle_left = (a:x ==# 0 ? '' : s:field[a:y][: a:x - 1])
+    let middle_right = (a:x ==# len(s:field[a:y]) - 1 ? '' : s:field[a:y][a:x + 1 :])
+    let below = (a:y ==# len(s:field) - 1 ? [] : s:field[a:y + 1 :])
+    let s:field = above + [middle_left . a:char . middle_right] + below
 endfunction
 
 
@@ -233,10 +267,23 @@ function! s:state_table.main.on_key(key)
     endif
     let self.move_count += 1
 
-    let line = getline(line('.') + y)
-    let idx = col('.') - 1 + x
-    " Move to h/j/k/l (Simply return h/j/k/l key)
-    return 0 <=# idx && idx < len(line) && line[idx] ==# ' ' ? a:key : ''
+    let coord = {'x': col('.') - 1 + x, 'y': line('.') - 1 + y}
+    let line = getline(coord.y + 1)
+    if coord.x <# 0 || coord.x >=# len(line)
+        " Out of text! (virtualedit is "")
+        return ''
+    endif
+
+    let mark_type = s:get_mark_type(line[coord.x])
+    if mark_type ==# s:MARK_FREE_SPACE
+        " Move to h/j/k/l (Simply return h/j/k/l key)
+        return a:key
+    elseif mark_type ==# s:MARK_FEED
+        call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
+        return a:key.'r '
+    else " s:MARK_WALL, and others
+        return ''
+    endif
 endfunction
 " --------- main end ---------
 
