@@ -52,6 +52,8 @@ function! s:start()
 
     let s:caller_bufnr = bufnr('%')
     enew
+    setlocal buftype=nowrite
+    setlocal noswapfile
     let s:pacman_bufnr = bufnr('%')
 
     let s:save_updatetime = &updatetime
