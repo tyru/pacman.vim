@@ -38,6 +38,7 @@ function! s:create_buffer()
     setlocal buftype=nowrite
     setlocal noswapfile
 
+    " TODO: Implement Konami command.
     for key in ['j', 'k', 'h', 'l']
         execute 'nnoremap <buffer><expr>' key 'b:pacman_current_table.on_key('.string(key).')'
     endfor
@@ -82,6 +83,7 @@ endfunction
 
 
 
+" TODO: Implement field auto-generation.
 let s:field_feed_num = -1
 let s:field = []
 let s:FIELDS = []
