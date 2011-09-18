@@ -39,6 +39,7 @@ set cpo&vim
 let s:caller_bufnr = -1
 let s:pacman_bufnr = -1
 let s:save_updatetime = -1
+let s:save_lazyredraw = -1
 
 function! s:playing()
     return s:caller_bufnr isnot -1
@@ -58,6 +59,8 @@ function! s:start()
 
     let s:save_updatetime = &updatetime
     set updatetime=50
+    let s:save_lazyredraw = &lazyredraw
+    set lazyredraw
     augroup pacman
         autocmd!
         autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
