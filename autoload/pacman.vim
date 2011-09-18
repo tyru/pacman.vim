@@ -64,14 +64,15 @@ function! s:create_buffer()
     for key in ['0', '^', '$', 'i', 'a', 'A']
         execute 'nnoremap <buffer>' key '<Nop>'
     endfor
-    " Alias for `s:state_table[s:state]`.
-    " because <buffer><expr>-mapping `<SID>state_table[<SID>state].on_key()` causes error.
+    " Deep-Copy of `s:state_table[s:state]`.
+    " `s:state_table[s:state]` and its keys/values DOES NOT change.
+    " `b:pacman_current_table` does change.
     let b:pacman_current_table = {}
 
     augroup pacman
         autocmd!
         autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
-        autocmd CursorHold <buffer> call s:state_table[s:state].func()
+        autocmd CursorHold <buffer> call b:pacman_current_table.func()
         autocmd InsertEnter <buffer> stopinsert
         autocmd BufLeave,BufDelete <buffer> call s:stop()
     augroup END
@@ -246,7 +247,8 @@ endfunction
 
 function! s:set_state(state)
     let s:state = a:state
-    let b:pacman_current_table = s:state_table[s:state]
+    let b:pacman_current_table = deepcopy(s:state_table[s:state])
+    unlockvar! b:pacman_current_table
 endfunction
 " Return empty string for 'on_key()'
 function! s:nop(...)
@@ -416,6 +418,8 @@ endfunction
 " --------- pause ---------
 let s:state_table.pause = s:create_table()
 " --------- pause end ---------
+
+lockvar! s:state_table
 
 
 " Restore 'cpoptions' {{{
