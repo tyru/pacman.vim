@@ -82,6 +82,7 @@ endfunction
 
 
 
+let s:field_feed_num = -1
 let s:field = []
 " TODO: Add more fields!
 let s:FIELDS = []
@@ -130,18 +131,27 @@ function! s:choose_field()
     "let s:field = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
     let s:field = deepcopy(s:FIELDS[0])
 endfunction
-function! s:move_to_start_point()
+function! s:initialize_field()
+    let start_point_coord = {'x': -1, 'y': -1}
+    let s:field_feed_num = 0
+    " Scan field.
     for y in range(len(s:field))
         for x in range(len(s:field[y]))
             if s:field[y][x] ==# s:CHAR_START_POINT
-                " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
-                call s:field_set_char(s:CHAR_FREE_SPACE, x, y)
-                " Move cursor to free space. (not wall)
-                call cursor(y + 1, x + 1)
-                break
+                let start_point_coord.x = x
+                let start_point_coord.y = y
+            elseif s:field[y][x] ==# s:CHAR_FEED
+                let s:field_feed_num += 1
             endif
         endfor
     endfor
+    call s:move_to_start_point(start_point_coord.x, start_point_coord.y)
+endfunction
+function! s:move_to_start_point(x, y)
+    " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
+    call s:field_set_char(s:CHAR_FREE_SPACE, a:x, a:y)
+    " Move cursor to free space. (not wall)
+    call cursor(a:y + 1, a:x + 1)
 endfunction
 
 " Vim does not support assignment to a character of String...
@@ -157,6 +167,9 @@ function! s:field_set_char(char, x, y)
     let middle_right = (a:x ==# len(s:field[a:y]) - 1 ? '' : s:field[a:y][a:x + 1 :])
     let below = (a:y ==# len(s:field) - 1 ? [] : s:field[a:y + 1 :])
     let s:field = above + [middle_left . a:char . middle_right] + below
+endfunction
+function! s:field_get_feed_num()
+    return s:field_feed_num
 endfunction
 
 
@@ -216,7 +229,7 @@ function! s:state_table.setup.func()
         redraw
         sleep 200m
     endfor
-    call s:move_to_start_point()
+    call s:initialize_field()
 
     call s:set_state('main')
 endfunction
@@ -228,7 +241,7 @@ function! s:state_table.fast_setup.func()
     call s:choose_field()
     %delete _
     call setline(1, s:field)
-    call s:move_to_start_point()
+    call s:initialize_field()
 
     call s:set_state('main')
 endfunction
