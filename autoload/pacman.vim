@@ -246,13 +246,12 @@ let s:state_table.main = s:create_table({
 \   },
 \})
 function! s:state_table.main.func()
-    let self.left_time -= 1
-
     " Time is over!!
-    if self.left_time is -1
+    if self.left_time is 0
         call s:set_state('gameover')
         return
     endif
+    let self.left_time -= 1
 
     " TODO: Draw only changed point(s)
     call setline(1, s:field + [
