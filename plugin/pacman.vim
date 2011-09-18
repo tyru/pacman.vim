@@ -139,6 +139,17 @@ function! s:state_table.setup.func()
 endfunction
 " --------- setup end ---------
 
+" --------- fast_setup ---------
+let s:state_table.fast_setup = {
+\   'board': s:state_table.setup.board,
+\}
+function! s:state_table.fast_setup.func()
+    %delete _
+    call setline(1, self.board)
+    let s:state = 'main'
+endfunction
+" --------- fast_setup end ---------
+
 " --------- main ---------
 let s:state_table.main = {
 \   'count': 0,
