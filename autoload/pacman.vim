@@ -29,6 +29,7 @@ function! pacman#start(skip_loading)
     let s:pacman_bufnr = bufnr('%')
 
     if a:skip_loading
+        " For debug.
         call s:set_state('fast_setup')
     endif
 endfunction
