@@ -37,6 +37,7 @@ endfunction
 function! s:create_buffer()
     enew
 
+    " Local options.
     setlocal buftype=nowrite
     setlocal noswapfile
     setlocal bufhidden=hide
@@ -45,6 +46,16 @@ function! s:create_buffer()
     setlocal nowrap
     setlocal nocursorline
     setlocal nocursorcolumn
+
+    " Global options.
+    let s:save_updatetime = &updatetime
+    set updatetime=100
+    let s:save_lazyredraw = &lazyredraw
+    set lazyredraw
+    let s:save_virtualedit = &virtualedit
+    set virtualedit=
+    let s:save_insertmode = &insertmode
+    set noinsertmode
 
     " TODO: Implement Konami command.
     for key in ['j', 'k', 'h', 'l']
@@ -57,14 +68,6 @@ function! s:create_buffer()
     " because <buffer><expr>-mapping `<SID>state_table[<SID>state].on_key()` causes error.
     let b:pacman_current_table = {}
 
-    let s:save_updatetime = &updatetime
-    set updatetime=100
-    let s:save_lazyredraw = &lazyredraw
-    set lazyredraw
-    let s:save_virtualedit = &virtualedit
-    set virtualedit=
-    let s:save_insertmode = &insertmode
-    set noinsertmode
     augroup pacman
         autocmd!
         autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
