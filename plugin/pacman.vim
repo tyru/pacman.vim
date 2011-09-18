@@ -64,7 +64,7 @@ function! s:start()
     augroup pacman
         autocmd!
         autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
-        autocmd CursorHold <buffer> call s:main_loop()
+        autocmd CursorHold <buffer> call s:state_table[s:state].func()
         autocmd BufLeave,BufDelete <buffer> call s:stop()
     augroup END
 endfunction
@@ -87,12 +87,39 @@ function! s:stop()
     let s:save_lazyredraw = -1
 endfunction
 
-let s:pacman = 0
-let s:graph = ['|', '/', '-', '\']
-function! s:main_loop()
-    let s:pacman += 1
-    call setline(1, s:graph[s:pacman % 4])
+
+
+
+let s:state = 'loading'
+let s:state_table = {}
+
+" --------- loading ---------
+let s:state_table.loading = {
+\   'count': 0,
+\   'graph': map(['|', '/', '-', '\'], '"loading....." . v:val'),
+\}
+function! s:state_table.loading.func()
+    if self.count is 10
+        let s:state = 'main'
+        call setline(1, 'load what? :p')
+        redraw
+        sleep 1
+        return
+    endif
+    let self.count += 1
+    call setline(1, self.graph[self.count % len(self.graph)])
 endfunction
+" --------- loading end ---------
+
+" --------- main ---------
+let s:state_table.main = {
+\   'count': 0,
+\}
+function! s:state_table.main.func()
+    let self.count += 1
+    call setline(1, 'hoge'.self.count)
+endfunction
+" --------- main end ---------
 
 
 command! -bar -bang Pacman call s:start()
