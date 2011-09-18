@@ -29,10 +29,8 @@ function! pacman#start(skip_loading)
     call s:create_buffer()
     let s:pacman_bufnr = bufnr('%')
 
-    if a:skip_loading
-        " For debug.
-        call s:set_state('fast_setup')
-    endif
+    " a:skip_loading for debug.
+    call s:set_state(a:skip_loading ? 'fast_setup' : 'loading')
 endfunction
 function! s:create_buffer()
     enew
