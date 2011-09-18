@@ -100,7 +100,7 @@ let s:state_table.loading = {
 \}
 function! s:state_table.loading.func()
     if self.count is 10
-        let s:state = 'main'
+        let s:state = 'setup'
         call setline(1, 'load what? :p')
         redraw
         sleep 1
@@ -110,6 +110,34 @@ function! s:state_table.loading.func()
     call setline(1, self.graph[self.count % len(self.graph)])
 endfunction
 " --------- loading end ---------
+
+" --------- setup ---------
+let s:state_table.setup = {
+\   'board': [
+\       '---------------------------',
+\       '|                         |',
+\       '|                         |',
+\       '|                         |',
+\       '|                         |',
+\       '|                         |',
+\       '|                         |',
+\       '|                         |',
+\       '|                         |',
+\       '---------------------------',
+\   ],
+\}
+function! s:state_table.setup.func()
+    %delete _
+    let i = 0
+    while i < len(self.board)
+        call setline(i ==# 0 ? 1 : line('$') + 1, self.board[i])
+        redraw
+        sleep 200m
+        let i += 1
+    endwhile
+    let s:state = 'main'
+endfunction
+" --------- setup end ---------
 
 " --------- main ---------
 let s:state_table.main = {
