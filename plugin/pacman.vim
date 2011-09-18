@@ -45,7 +45,7 @@ function! s:playing()
     return s:caller_bufnr isnot -1
 endfunction
 
-function! s:start()
+function! s:start(skip_loading)
     if s:playing()
         execute s:caller_bufnr 'buffer'
         return
@@ -67,6 +67,10 @@ function! s:start()
         autocmd CursorHold <buffer> call s:state_table[s:state].func()
         autocmd BufLeave,BufDelete <buffer> call s:stop()
     augroup END
+
+    if a:skip_loading
+        let s:state = 'fast_setup'
+    endif
 endfunction
 
 function! s:stop()
@@ -170,7 +174,7 @@ endfunction
 " --------- main end ---------
 
 
-command! -bar -bang Pacman call s:start()
+command! -bar -bang Pacman call s:start(<bang>0)
 
 
 " Restore 'cpoptions' {{{
