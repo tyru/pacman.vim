@@ -175,7 +175,7 @@ function! s:state_table.setup.func()
         call setline(i ==# 0 ? 1 : line('$') + 1, s:field[i])
         redraw
         sleep 200m
-    endwhile
+    endfor
     call s:move_to_start_point()
 
     call s:set_state('main')
