@@ -171,6 +171,9 @@ endfunction
 function! s:field_get_feed_num()
     return s:field_feed_num
 endfunction
+function! s:field_dec_feed_num()
+    let s:field_feed_num -= 1
+endfunction
 
 
 
@@ -295,16 +298,39 @@ function! s:state_table.main.on_key(key)
 
     let mark_type = s:get_mark_type(line[coord.x])
     if mark_type ==# s:MARK_FREE_SPACE
-        " Move to h/j/k/l (Simply return h/j/k/l key)
+        " Move cursor.
         return a:key
     elseif mark_type ==# s:MARK_FEED
-        call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
+        " Decrement the number of feeds in this field.
+        call s:field_dec_feed_num()
+        if s:field_get_feed_num() <=# 0
+            " You have eaten all feeds!! Go to next stage...
+            sleep 1
+            call s:set_state('next_stage')
+        else
+            " Ate it. Set a free space here...
+            call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
+        endif
+        " Move cursor.
         return a:key.'r '
     else " s:MARK_WALL, and others
         return ''
     endif
 endfunction
 " --------- main end ---------
+
+" --------- next_stage ---------
+let s:state_table.next_stage = s:create_table()
+function! s:state_table.next_stage.func()
+    " Delete the last line.
+    $delete _
+    redraw
+    " All lines were deleted.
+    if line('$') is 1 && getline(1) ==# ''
+        call s:set_state('setup')
+    endif
+endfunction
+" --------- next_stage end ---------
 
 " --------- gameover ---------
 let s:state_table.gameover = s:create_table()
