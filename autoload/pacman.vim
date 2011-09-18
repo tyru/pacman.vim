@@ -12,6 +12,7 @@ let s:pacman_bufnr = -1
 let s:save_updatetime = -1
 let s:save_lazyredraw = -1
 let s:save_virtualedit = ''
+let s:save_insertmode = 0
 
 function! s:playing()
     return s:caller_bufnr isnot -1
@@ -62,10 +63,13 @@ function! s:create_buffer()
     set lazyredraw
     let s:save_virtualedit = &virtualedit
     set virtualedit=
+    let s:save_insertmode = &insertmode
+    set noinsertmode
     augroup pacman
         autocmd!
         autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
         autocmd CursorHold <buffer> call s:state_table[s:state].func()
+        autocmd InsertEnter <buffer> stopinsert
         autocmd BufLeave,BufDelete <buffer> call s:stop()
     augroup END
 endfunction
@@ -88,6 +92,8 @@ function! s:stop()
     let s:save_lazyredraw = -1
     let &virtualedit = s:save_virtualedit
     let s:save_virtualedit = ''
+    let &insertmode = s:insertmode
+    let s:save_insertmode = ''
 endfunction
 
 
