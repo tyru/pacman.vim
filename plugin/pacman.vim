@@ -58,7 +58,7 @@ function! s:start()
     let s:pacman_bufnr = bufnr('%')
 
     let s:save_updatetime = &updatetime
-    set updatetime=50
+    set updatetime=100
     let s:save_lazyredraw = &lazyredraw
     set lazyredraw
     augroup pacman
