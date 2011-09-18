@@ -152,11 +152,20 @@ endfunction
 
 " --------- main ---------
 let s:state_table.main = {
-\   'count': 0,
+\   'board': s:state_table.setup.board,
+\   'left_time': 20,
 \}
 function! s:state_table.main.func()
-    let self.count += 1
-    call setline(1, 'hoge'.self.count)
+    let self.left_time -= 1
+    if self.left_time is -1
+        let s:state = 'gameover'
+        return
+    endif
+
+    call setline(1, self.board + [
+    \   '',
+    \   'Left Time: ' . self.left_time,
+    \])
 endfunction
 " --------- main end ---------
 
