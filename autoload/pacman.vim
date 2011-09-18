@@ -248,6 +248,7 @@ function! s:state_table.main.func()
         return
     endif
 
+    " TODO: Draw only changed point(s)
     call setline(1, s:field + [
     \   '',
     \   'Left Time: ' . self.left_time,
