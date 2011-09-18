@@ -38,6 +38,12 @@ function! s:create_buffer()
 
     setlocal buftype=nowrite
     setlocal noswapfile
+    setlocal bufhidden=hide
+    setlocal buftype=nofile
+    setlocal nonumber
+    setlocal nowrap
+    setlocal nocursorline
+    setlocal nocursorcolumn
 
     " TODO: Implement Konami command.
     for key in ['j', 'k', 'h', 'l']
