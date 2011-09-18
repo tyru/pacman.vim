@@ -260,7 +260,7 @@ function! s:state_table.main.on_key(key)
     let x = self.keys[a:key].x
     let y = self.keys[a:key].y
 
-    " Do left_time-- once per 5 times.
+    " Do `let self.left_time -= 1` once per 5 times.
     if self.move_count is 5
         let self.left_time -= 1
         let self.move_count = 0
