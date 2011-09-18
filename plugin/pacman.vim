@@ -173,6 +173,20 @@ function! s:state_table.main.func()
 endfunction
 " --------- main end ---------
 
+" --------- gameover ---------
+let s:state_table.gameover = {}
+function! s:state_table.gameover.func()
+    %delete _
+    a
+  ####     ##    #    #  ######   ####   #    #  ######  #####
+ #    #   #  #   ##  ##  #       #    #  #    #  #       #    #
+ #       #    #  # ## #  #####   #    #  #    #  #####   #    #
+ #  ###  ######  #    #  #       #    #  #    #  #       #####
+ #    #  #    #  #    #  #       #    #   #  #   #       #   #
+  ####   #    #  #    #  ######   ####     ##    ######  #    #
+.
+endfunction
+" --------- gameover end ---------
 
 command! -bar -bang Pacman call s:start(<bang>0)
 
