@@ -27,6 +27,10 @@ function! pacman#start(skip_loading)
     enew
     setlocal buftype=nowrite
     setlocal noswapfile
+    nnoremap <buffer><expr> j <SID>move('j', 0, +1)
+    nnoremap <buffer><expr> k <SID>move('k', 0, -1)
+    nnoremap <buffer><expr> h <SID>move('h', -1, 0)
+    nnoremap <buffer><expr> l <SID>move('l', +1, 0)
     let s:pacman_bufnr = bufnr('%')
 
     let s:save_updatetime = &updatetime
@@ -67,6 +71,11 @@ function! s:stop()
     let s:save_virtualedit = ''
 endfunction
 
+function! s:move(dir, x, y)
+    let line = getline(line('.') + a:y)
+    let x = col('.') - 1 + a:x
+    return 0 <=# x && x < len(line) && line[x] !=# ' ' ? a:dir : ''
+endfunction
 
 
 
