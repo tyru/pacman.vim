@@ -315,15 +315,29 @@ let s:state_table.main = s:create_table({
 \       'h': {'x': -1, 'y': 0},
 \       'l': {'x': +1, 'y': 0},
 \   },
+\   'moving_to_next_stage': 0,
 \})
 function! s:state_table.main.func()
+    if self.moving_to_next_stage
+        " Draw current field before moving to next stage.
+        " Because the last `s:CHAR_FEED` remains in a buffer.
+        call self.draw_field()
+        redraw
+        sleep 1
+        call s:set_state('next_stage')
+        return
+    endif
+
     " Time is over!!
     if self.left_time is 0
         call s:set_state('gameover')
         return
     endif
     let self.left_time -= 1
-
+    " Draw a field.
+    call self.draw_field()
+endfunction
+function! s:state_table.main.draw_field()
     " TODO: Draw only changed point(s)
     call setline(1, s:field_get_map() + [
     \   '',
@@ -356,16 +370,14 @@ function! s:state_table.main.on_key(key)
         " Move cursor.
         return a:key
     elseif mark_type ==# s:MARK_FEED
+        " Ate it. Mark here as a free space...
+        call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
         " Decrement the number of feeds in this field.map.
         call s:field_dec_feed_num()
         if s:field_get_feed_num() <=# 0
             " You have eaten all feeds!! Go to next stage...
-            call s:set_state('next_stage')
-        else
-            " Ate it. Set a free space here...
-            call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
+            let self.moving_to_next_stage = 1
         endif
-        " Move cursor.
         return a:key.'r '
     else " s:MARK_WALL, and others
         return ''
@@ -374,13 +386,8 @@ endfunction
 " --------- main end ---------
 
 " --------- next_stage ---------
-let s:state_table.next_stage = s:create_table({'firstcall': 1})
+let s:state_table.next_stage = s:create_table()
 function! s:state_table.next_stage.func()
-    if self.firstcall
-        sleep 1
-    endif
-    let self.firstcall = 0
-
     " Delete the last line.
     $delete _
     redraw
