@@ -65,10 +65,13 @@ function! s:create_buffer()
     augroup pacman
         autocmd!
         call s:register_polling_autocmd()
+        " Inhibit insert-mode.
         autocmd InsertEnter <buffer> stopinsert
+        " Pause on BufLeave, BufEnter.
         autocmd BufLeave <buffer> call s:pause()
         autocmd BufEnter <buffer> call s:restart()
-        autocmd BufDelete <buffer> call s:stop()
+        " Clean up all thingies about pacman.
+        autocmd BufDelete <buffer> call s:clean_up()
     augroup END
 endfunction
 
@@ -101,7 +104,7 @@ function! s:restart()
     call s:register_polling_autocmd()
 endfunction
 
-function! s:stop()
+function! s:clean_up()
     if !s:playing()
         return
     endif
