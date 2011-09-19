@@ -187,6 +187,9 @@ endfunction
 function! s:field_dec_feed_num()
     let s:field.feed_num -= 1
 endfunction
+function! s:field_get_map()
+    return s:field.map
+endfunction
 
 
 
@@ -241,8 +244,9 @@ let s:state_table.setup = s:create_table()
 function! s:state_table.setup.func()
     call s:choose_field()
     %delete _
-    for i in range(len(s:field.map))
-        call setline(i ==# 0 ? 1 : line('$') + 1, s:field.map[i])
+    let map = s:field_get_map()
+    for i in range(len(map))
+        call setline(i ==# 0 ? 1 : line('$') + 1, map[i])
         redraw
         sleep 200m
     endfor
@@ -257,7 +261,7 @@ let s:state_table.fast_setup = s:create_table()
 function! s:state_table.fast_setup.func()
     call s:choose_field()
     %delete _
-    call setline(1, s:field.map)
+    call setline(1, s:field_get_map())
     call s:initialize_field()
 
     call s:set_state('main')
@@ -284,7 +288,7 @@ function! s:state_table.main.func()
     let self.left_time -= 1
 
     " TODO: Draw only changed point(s)
-    call setline(1, s:field.map + [
+    call setline(1, s:field_get_map() + [
     \   '',
     \   'Left Time: ' . self.left_time,
     \])
