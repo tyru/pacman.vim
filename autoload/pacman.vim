@@ -52,9 +52,15 @@ function! s:create_buffer()
 
     " TODO: Implement Konami command.
     for key in ['j', 'k', 'h', 'l']
-        execute 'nnoremap <buffer><expr>' key 'b:pacman.current_table.on_key('.string(key).')'
+        execute 'nnoremap <buffer><expr>' key
+        \   'b:pacman.current_table.on_key('.string(key).')'
     endfor
-    for key in ['0', '^', '$', 'i', 'a', 'A', '/', '?', 's', 'S', 'c', 'C', 'd', 'D']
+    for key in [
+    \   '0', '^', '$',
+    \   'i', 'a', 'A',
+    \   '/', '?',
+    \   's', 'S', 'c', 'C', 'd', 'D',
+    \]
         execute 'nnoremap <buffer>' key '<Nop>'
     endfor
     " Deep-Copy of `s:state_table[s:state]`.
