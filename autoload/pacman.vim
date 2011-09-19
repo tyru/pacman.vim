@@ -175,11 +175,10 @@ function! s:field_set_char(char, x, y)
     \   || strlen(a:char) !=# 1
         return
     endif
-    let above = (a:y ==# 0 ? [] : s:field.map[: a:y - 1])
-    let middle_left = (a:x ==# 0 ? '' : s:field.map[a:y][: a:x - 1])
-    let middle_right = (a:x ==# len(s:field.map[a:y]) - 1 ? '' : s:field.map[a:y][a:x + 1 :])
-    let below = (a:y ==# len(s:field.map) - 1 ? [] : s:field.map[a:y + 1 :])
-    let s:field.map = above + [middle_left . a:char . middle_right] + below
+    let line = s:field.map[a:y]
+    let middle_left = (a:x ==# 0 ? '' : line[: a:x - 1])
+    let middle_right = (a:x ==# len(line) - 1 ? '' : line[a:x + 1 :])
+    let s:field.map[a:y] = middle_left . a:char . middle_right
 endfunction
 function! s:field_get_feed_num()
     return s:field.feed_num
