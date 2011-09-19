@@ -322,7 +322,6 @@ function! s:state_table.main.on_key(key)
         call s:field_dec_feed_num()
         if s:field_get_feed_num() <=# 0
             " You have eaten all feeds!! Go to next stage...
-            sleep 1
             call s:set_state('next_stage')
         else
             " Ate it. Set a free space here...
@@ -337,8 +336,13 @@ endfunction
 " --------- main end ---------
 
 " --------- next_stage ---------
-let s:state_table.next_stage = s:create_table()
+let s:state_table.next_stage = s:create_table({'firstcall': 1})
 function! s:state_table.next_stage.func()
+    if self.firstcall
+        sleep 1
+    endif
+    let self.firstcall = 0
+
     " Delete the last line.
     $delete _
     redraw
