@@ -7,6 +7,12 @@ set cpo&vim
 " }}}
 
 
+" Delay rewriting feed character to free space character.
+if !exists('g:pacman#eat_effect')
+    let g:pacman#eat_effect = 1
+endif
+
+
 function! s:playing()
     return exists('b:pacman')
 endfunction
@@ -378,7 +384,7 @@ function! s:state_table.main.on_key(key)
             " You have eaten all feeds!! Go to next stage...
             let self.moving_to_next_stage = 1
         endif
-        return a:key.'r '
+        return a:key . (g:pacman#eat_effect ? '' : 'r ')
     else " s:MARK_WALL, and others
         return ''
     endif
