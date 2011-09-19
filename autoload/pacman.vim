@@ -8,17 +8,17 @@ set cpo&vim
 
 
 function! s:playing()
-    return exists('b:caller_bufnr')
+    return exists('b:pacman')
 endfunction
 
 function! pacman#start(skip_loading)
     if s:playing()
-        execute b:caller_bufnr 'buffer'
+        execute b:pacman.caller_bufnr 'buffer'
         return
     endif
 
     " Create buffer.
-    let b:caller_bufnr = bufnr('%')
+    let b:pacman = {'caller_bufnr': bufnr('%')}
     call s:create_buffer()
 
     " a:skip_loading for debug.
@@ -38,31 +38,31 @@ function! s:create_buffer()
     setlocal nocursorcolumn
 
     " Global options.
-    let b:save_updatetime = &updatetime
+    let b:pacman.save_updatetime = &updatetime
     set updatetime=100
-    let b:save_lazyredraw = &lazyredraw
+    let b:pacman.save_lazyredraw = &lazyredraw
     set lazyredraw
-    let b:save_virtualedit = &virtualedit
+    let b:pacman.save_virtualedit = &virtualedit
     set virtualedit=
-    let b:save_insertmode = &insertmode
+    let b:pacman.save_insertmode = &insertmode
     set noinsertmode
 
     " TODO: Implement Konami command.
     for key in ['j', 'k', 'h', 'l']
-        execute 'nnoremap <buffer><expr>' key 'b:pacman_current_table.on_key('.string(key).')'
+        execute 'nnoremap <buffer><expr>' key 'b:pacman.current_table.on_key('.string(key).')'
     endfor
     for key in ['0', '^', '$', 'i', 'a', 'A', '/', '?']
         execute 'nnoremap <buffer>' key '<Nop>'
     endfor
     " Deep-Copy of `s:state_table[s:state]`.
     " `s:state_table[s:state]` and its keys/values DOES NOT change.
-    " `b:pacman_current_table` does change.
-    let b:pacman_current_table = {}
+    " `b:pacman.current_table` does change.
+    let b:pacman.current_table = {}
 
     augroup pacman
         autocmd!
         autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
-        autocmd CursorHold <buffer> call b:pacman_current_table.func()
+        autocmd CursorHold <buffer> call b:pacman.current_table.func()
         autocmd InsertEnter <buffer> stopinsert
         autocmd BufLeave,BufDelete <buffer> call s:stop()
     augroup END
@@ -76,16 +76,16 @@ function! s:stop()
         return
     endif
 
-    let &updatetime = b:save_updatetime
-    let b:save_updatetime = -1
-    let &lazyredraw = b:save_lazyredraw
-    let b:save_lazyredraw = -1
-    let &virtualedit = b:save_virtualedit
-    let b:save_virtualedit = ''
+    let &updatetime = b:pacman.save_updatetime
+    let b:pacman.save_updatetime = -1
+    let &lazyredraw = b:pacman.save_lazyredraw
+    let b:pacman.save_lazyredraw = -1
+    let &virtualedit = b:pacman.save_virtualedit
+    let b:pacman.save_virtualedit = ''
     let &insertmode = s:insertmode
-    let b:save_insertmode = ''
+    let b:pacman.save_insertmode = ''
 
-    execute b:caller_bufnr 'buffer'
+    execute b:pacman.caller_bufnr 'buffer'
 endfunction
 
 
@@ -185,8 +185,8 @@ endfunction
 
 function! s:set_state(state)
     let s:state = a:state
-    let b:pacman_current_table = deepcopy(s:state_table[s:state])
-    unlockvar! b:pacman_current_table
+    let b:pacman.current_table = deepcopy(s:state_table[s:state])
+    unlockvar! b:pacman.current_table
 endfunction
 " Return empty string for 'on_key()'
 function! s:nop(...)
