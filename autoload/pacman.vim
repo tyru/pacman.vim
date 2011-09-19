@@ -102,8 +102,7 @@ endfunction
 
 
 " TODO: Implement field auto-generation.
-let s:field_feed_num = -1
-let s:field = []
+let s:field = {'map': [], 'feed_num': -1}
 let s:FIELDS = []
 
 let s:CHAR_START_POINT = '+'
@@ -143,19 +142,19 @@ function! s:choose_field()
             catch | endtry
         endfor
     endif
-    let s:field = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
+    let s:field.map = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
 endfunction
 function! s:initialize_field()
     let start_point_coord = {'x': -1, 'y': -1}
-    let s:field_feed_num = 0
+    let s:field.feed_num = 0
     " Scan field.
-    for y in range(len(s:field))
-        for x in range(len(s:field[y]))
-            if s:field[y][x] ==# s:CHAR_START_POINT
+    for y in range(len(s:field.map))
+        for x in range(len(s:field.map[y]))
+            if s:field.map[y][x] ==# s:CHAR_START_POINT
                 let start_point_coord.x = x
                 let start_point_coord.y = y
-            elseif s:field[y][x] ==# s:CHAR_FEED
-                let s:field_feed_num += 1
+            elseif s:field.map[y][x] ==# s:CHAR_FEED
+                let s:field.feed_num += 1
             endif
         endfor
     endfor
@@ -169,24 +168,24 @@ function! s:move_to_start_point(x, y)
 endfunction
 
 " Vim does not support assignment to a character of String...
-"let s:field[a:y][a:x]  = s:CHAR_START_POINT
+"let s:field.map[a:y][a:x]  = s:CHAR_START_POINT
 function! s:field_set_char(char, x, y)
-    if a:y <# 0 || a:y >=# len(s:field)
-    \   || a:x <# 0 || a:x >=# len(s:field[a:y])
+    if a:y <# 0 || a:y >=# len(s:field.map)
+    \   || a:x <# 0 || a:x >=# len(s:field.map[a:y])
     \   || strlen(a:char) !=# 1
         return
     endif
-    let above = (a:y ==# 0 ? [] : s:field[: a:y - 1])
-    let middle_left = (a:x ==# 0 ? '' : s:field[a:y][: a:x - 1])
-    let middle_right = (a:x ==# len(s:field[a:y]) - 1 ? '' : s:field[a:y][a:x + 1 :])
-    let below = (a:y ==# len(s:field) - 1 ? [] : s:field[a:y + 1 :])
-    let s:field = above + [middle_left . a:char . middle_right] + below
+    let above = (a:y ==# 0 ? [] : s:field.map[: a:y - 1])
+    let middle_left = (a:x ==# 0 ? '' : s:field.map[a:y][: a:x - 1])
+    let middle_right = (a:x ==# len(s:field.map[a:y]) - 1 ? '' : s:field.map[a:y][a:x + 1 :])
+    let below = (a:y ==# len(s:field.map) - 1 ? [] : s:field.map[a:y + 1 :])
+    let s:field.map = above + [middle_left . a:char . middle_right] + below
 endfunction
 function! s:field_get_feed_num()
-    return s:field_feed_num
+    return s:field.feed_num
 endfunction
 function! s:field_dec_feed_num()
-    let s:field_feed_num -= 1
+    let s:field.feed_num -= 1
 endfunction
 
 
@@ -242,8 +241,8 @@ let s:state_table.setup = s:create_table()
 function! s:state_table.setup.func()
     call s:choose_field()
     %delete _
-    for i in range(len(s:field))
-        call setline(i ==# 0 ? 1 : line('$') + 1, s:field[i])
+    for i in range(len(s:field.map))
+        call setline(i ==# 0 ? 1 : line('$') + 1, s:field.map[i])
         redraw
         sleep 200m
     endfor
@@ -258,7 +257,7 @@ let s:state_table.fast_setup = s:create_table()
 function! s:state_table.fast_setup.func()
     call s:choose_field()
     %delete _
-    call setline(1, s:field)
+    call setline(1, s:field.map)
     call s:initialize_field()
 
     call s:set_state('main')
@@ -285,7 +284,7 @@ function! s:state_table.main.func()
     let self.left_time -= 1
 
     " TODO: Draw only changed point(s)
-    call setline(1, s:field + [
+    call setline(1, s:field.map + [
     \   '',
     \   'Left Time: ' . self.left_time,
     \])
@@ -316,7 +315,7 @@ function! s:state_table.main.on_key(key)
         " Move cursor.
         return a:key
     elseif mark_type ==# s:MARK_FEED
-        " Decrement the number of feeds in this field.
+        " Decrement the number of feeds in this field.map.
         call s:field_dec_feed_num()
         if s:field_get_feed_num() <=# 0
             " You have eaten all feeds!! Go to next stage...
