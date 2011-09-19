@@ -143,6 +143,7 @@ let s:FIELDS = []
 let s:CHAR_START_POINT = '+'
 let s:CHAR_FREE_SPACE = ' '
 let s:CHAR_FEED = '$'
+let s:CHAR_SUPER_FEED = '@'
 
 " No `s:MARK_START_POINT` because
 " `s:CHAR_START_POINT` is replaced with `s:CHAR_FREE_SPACE`.
