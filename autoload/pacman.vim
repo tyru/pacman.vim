@@ -7,27 +7,19 @@ set cpo&vim
 " }}}
 
 
-let s:caller_bufnr = -1
-let s:pacman_bufnr = -1
-let s:save_updatetime = -1
-let s:save_lazyredraw = -1
-let s:save_virtualedit = ''
-let s:save_insertmode = 0
-
 function! s:playing()
-    return s:caller_bufnr isnot -1
+    return exists('b:caller_bufnr')
 endfunction
 
 function! pacman#start(skip_loading)
     if s:playing()
-        execute s:caller_bufnr 'buffer'
+        execute b:caller_bufnr 'buffer'
         return
     endif
 
     " Create buffer.
-    let s:caller_bufnr = bufnr('%')
+    let b:caller_bufnr = bufnr('%')
     call s:create_buffer()
-    let s:pacman_bufnr = bufnr('%')
 
     " a:skip_loading for debug.
     call s:set_state(a:skip_loading ? 'fast_setup' : 'loading')
@@ -46,13 +38,13 @@ function! s:create_buffer()
     setlocal nocursorcolumn
 
     " Global options.
-    let s:save_updatetime = &updatetime
+    let b:save_updatetime = &updatetime
     set updatetime=100
-    let s:save_lazyredraw = &lazyredraw
+    let b:save_lazyredraw = &lazyredraw
     set lazyredraw
-    let s:save_virtualedit = &virtualedit
+    let b:save_virtualedit = &virtualedit
     set virtualedit=
-    let s:save_insertmode = &insertmode
+    let b:save_insertmode = &insertmode
     set noinsertmode
 
     " TODO: Implement Konami command.
@@ -84,18 +76,16 @@ function! s:stop()
         return
     endif
 
-    execute s:caller_bufnr 'buffer'
-    execute s:pacman_bufnr 'bwipeout'
-    let s:caller_bufnr = -1
-    let s:pacman_bufnr = -1
-    let &updatetime = s:save_updatetime
-    let s:save_updatetime = -1
-    let &lazyredraw = s:save_lazyredraw
-    let s:save_lazyredraw = -1
-    let &virtualedit = s:save_virtualedit
-    let s:save_virtualedit = ''
+    let &updatetime = b:save_updatetime
+    let b:save_updatetime = -1
+    let &lazyredraw = b:save_lazyredraw
+    let b:save_lazyredraw = -1
+    let &virtualedit = b:save_virtualedit
+    let b:save_virtualedit = ''
     let &insertmode = s:insertmode
-    let s:save_insertmode = ''
+    let b:save_insertmode = ''
+
+    execute b:caller_bufnr 'buffer'
 endfunction
 
 
