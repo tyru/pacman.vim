@@ -39,8 +39,6 @@ function! s:create_buffer()
     setlocal nowrap
     setlocal nocursorline
     setlocal nocursorcolumn
-    " Inhibit rewriting buffer.
-    setlocal nomodifiable
 
     " Global options.
     let b:pacman.save_updatetime = &updatetime
@@ -123,26 +121,6 @@ function! s:clean_up()
     execute b:pacman.caller_bufnr 'buffer'
 endfunction
 
-
-
-
-" Buffer
-function! s:buf_setline(lnum, expr)
-    setlocal modifiable
-    try
-        return setline(a:lnum, a:expr)
-    finally
-        setlocal nomodifiable
-    endtry
-endfunction
-function! s:buf_execute(excmd)
-    setlocal modifiable
-    try
-        execute a:excmd
-    finally
-        setlocal nomodifiable
-    endtry
-endfunction
 
 
 
@@ -273,13 +251,13 @@ let s:state_table.loading = s:create_table({
 function! s:state_table.loading.func()
     if self.count is 10
         call s:set_state('setup')
-        call s:buf_setline(1, 'load what? :p')
+        call setline(1, 'load what? :p')
         redraw
         sleep 1
         return
     endif
     let self.count += 1
-    call s:buf_setline(1, self.graph[self.count % len(self.graph)])
+    call setline(1, self.graph[self.count % len(self.graph)])
 endfunction
 " --------- loading end ---------
 
@@ -287,18 +265,13 @@ endfunction
 let s:state_table.setup = s:create_table()
 function! s:state_table.setup.func()
     call s:choose_field()
-    setlocal modifiable
-    try
-        %delete _
-        let map = s:field_get_map()
-        for i in range(len(map))
-            call setline(i ==# 0 ? 1 : line('$') + 1, map[i])
-            redraw
-            sleep 200m
-        endfor
-    finally
-        setlocal nomodifiable
-    endtry
+    %delete _
+    let map = s:field_get_map()
+    for i in range(len(map))
+        call setline(i ==# 0 ? 1 : line('$') + 1, map[i])
+        redraw
+        sleep 200m
+    endfor
     call s:initialize_field()
 
     call s:set_state('main')
@@ -309,13 +282,8 @@ endfunction
 let s:state_table.fast_setup = s:create_table()
 function! s:state_table.fast_setup.func()
     call s:choose_field()
-    setlocal modifiable
-    try
-        %delete _
-        call setline(1, s:field_get_map())
-    finally
-        setlocal nomodifiable
-    endtry
+    %delete _
+    call setline(1, s:field_get_map())
     call s:initialize_field()
 
     call s:set_state('main')
@@ -342,7 +310,7 @@ function! s:state_table.main.func()
     let self.left_time -= 1
 
     " TODO: Draw only changed point(s)
-    call s:buf_setline(1, s:field_get_map() + [
+    call setline(1, s:field_get_map() + [
     \   '',
     \   'Left Time: ' . self.left_time,
     \])
@@ -399,7 +367,7 @@ function! s:state_table.next_stage.func()
     let self.firstcall = 0
 
     " Delete the last line.
-    call s:buf_execute('$delete _')
+    $delete _
     redraw
     " All lines were deleted.
     if line('$') is 1 && getline(1) ==# ''
@@ -411,10 +379,8 @@ endfunction
 " --------- gameover ---------
 let s:state_table.gameover = s:create_table()
 function! s:state_table.gameover.func()
-    setlocal modifiable
-    try
-        %delete _
-        a
+    %delete _
+    a
   ####     ##    #    #  ######   ####   #    #  ######  #####
  #    #   #  #   ##  ##  #       #    #  #    #  #       #    #
  #       #    #  # ## #  #####   #    #  #    #  #####   #    #
@@ -422,9 +388,6 @@ function! s:state_table.gameover.func()
  #    #  #    #  #    #  #       #    #   #  #   #       #   #
   ####   #    #  #    #  ######   ####     ##    ######  #    #
 .
-    finally
-        setlocal nomodifiable
-    endtry
 endfunction
 " --------- gameover end ---------
 
