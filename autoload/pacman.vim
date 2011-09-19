@@ -27,6 +27,7 @@ function! s:create_buffer()
     let caller_bufnr = bufnr('%')
     enew
     let b:pacman = {}
+    let b:pacman.pausing = 0
     let b:pacman.caller_bufnr = caller_bufnr
 
     " Local options.
@@ -63,18 +64,45 @@ function! s:create_buffer()
 
     augroup pacman
         autocmd!
-        autocmd CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
-        autocmd CursorHold <buffer> call b:pacman.current_table.func()
+        call s:register_polling_autocmd()
         autocmd InsertEnter <buffer> stopinsert
-        autocmd BufLeave,BufDelete <buffer> call s:stop()
+        autocmd BufLeave <buffer> call s:pause()
+        autocmd BufEnter <buffer> call s:restart()
+        autocmd BufDelete <buffer> call s:stop()
     augroup END
+endfunction
+
+function! s:register_polling_autocmd()
+    autocmd pacman CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
+    autocmd pacman CursorHold <buffer> call b:pacman.current_table.func()
+    let b:pacman.pausing = 0
+endfunction
+
+function! s:unregister_polling_autocmd()
+    autocmd! pacman CursorHold <buffer>
+    let b:pacman.pausing = 1
+endfunction
+
+function! s:pausing()
+    return b:pacman.pausing
+endfunction
+
+function! s:pause()
+    if !s:playing() || s:pausing()
+        return
+    endif
+    call s:unregister_polling_autocmd()
+endfunction
+
+function! s:restart()
+    if !s:playing() || !s:pausing()
+        return
+    endif
+    call s:register_polling_autocmd()
 endfunction
 
 function! s:stop()
     if !s:playing()
-        echohl WarningMsg
-        echomsg 'No pacman progress.'
-        echohl None
         return
     endif
 
