@@ -83,7 +83,7 @@ endfunction
 
 function! s:register_polling_autocmd()
     autocmd pacman CursorHold <buffer> silent call feedkeys("g\<Esc>", "n")
-    autocmd pacman CursorHold <buffer> call b:pacman.current_table.func()
+    autocmd pacman CursorHold <buffer> call s:main_loop()
     let b:pacman.pausing = 0
 endfunction
 
@@ -221,6 +221,15 @@ endfunction
 
 
 
+function! s:main_loop()
+    let b:pacman.previous_changedtick =
+    \   get(b:pacman, 'previous_changedtick', b:changedtick)
+    if b:changedtick isnot b:pacman.previous_changedtick
+        undo
+    endif
+    call b:pacman.current_table.func()
+    let b:pacman.previous_changedtick = b:changedtick
+endfunction
 
 function! s:set_state(state)
     let s:state = a:state
