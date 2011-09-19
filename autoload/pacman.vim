@@ -84,7 +84,7 @@ function! s:stop()
     let b:pacman.save_lazyredraw = -1
     let &virtualedit = b:pacman.save_virtualedit
     let b:pacman.save_virtualedit = ''
-    let &insertmode = s:insertmode
+    let &insertmode = b:pacman.save_insertmode
     let b:pacman.save_insertmode = ''
 
     execute b:pacman.caller_bufnr 'buffer'
