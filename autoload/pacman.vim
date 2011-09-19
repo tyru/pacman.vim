@@ -143,6 +143,7 @@ let s:FIELDS = []
 let s:CHAR_START_POINT = '+'
 let s:CHAR_FREE_SPACE = ' '
 let s:CHAR_FEED = '$'
+let s:CHAR_ENEMY = '*'
 
 let s:DIR_DOWN = 'j'
 let s:DIR_UP = 'k'
