@@ -18,14 +18,16 @@ function! pacman#start(skip_loading)
     endif
 
     " Create buffer.
-    let b:pacman = {'caller_bufnr': bufnr('%')}
     call s:create_buffer()
 
     " a:skip_loading for debug.
     call s:set_state(a:skip_loading ? 'fast_setup' : 'loading')
 endfunction
 function! s:create_buffer()
+    let caller_bufnr = bufnr('%')
     enew
+    let b:pacman = {}
+    let b:pacman.caller_bufnr = caller_bufnr
 
     " Local options.
     setlocal buftype=nowrite
