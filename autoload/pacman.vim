@@ -174,10 +174,6 @@ function! s:get_mark_type(c)
     return get(s:CHAR_TO_MARK_TYPE_TABLE, a:c, s:MARK_WALL)
 endfunction
 
-function! s:rand(n)
-    let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
-    return reltimestr(reltime())[match_end : ] % a:n
-endfunction
 function! s:choose_field()
     if empty(s:FIELDS)
         for map_file in split(
@@ -453,6 +449,10 @@ function! s:echomsg(hl, msg)
     finally
         echohl None
     endtry
+endfunction
+function! s:rand(n)
+    let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
+    return reltimestr(reltime())[match_end : ] % a:n
 endfunction
 
 
