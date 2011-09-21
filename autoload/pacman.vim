@@ -179,6 +179,9 @@ let s:CHAR_TO_MARK_TYPE_TABLE = {
 function! s:get_mark_type(c)
     return get(s:CHAR_TO_MARK_TYPE_TABLE, a:c, s:MARK_WALL)
 endfunction
+function! s:field_coord_get_mark_type(x, y)
+    return s:get_mark_type(s:field.map[a:y][a:x])
+endfunction
 
 function! s:choose_field()
     if empty(s:FIELDS)
@@ -257,6 +260,17 @@ function! s:field_register_enemy(enemy)
     let s:field.enemy_map[a:enemy.y][a:enemy.x] = 1
     call add(s:field.enemies, a:enemy)
 endfunction
+function! s:field_update_enemy_coord(enemy)
+    let s:field.enemy_map[a:enemy.y][a:enemy.x] = 0
+    let a:enemy.x += s:DIR[a:enemy.move_dir].dx
+    let a:enemy.y += s:DIR[a:enemy.move_dir].dy
+    let s:field.enemy_map[a:enemy.y][a:enemy.x] = 1
+endfunction
+function! s:field_move_all_enemies()
+    for enemy in s:field.enemies
+        call enemy.move()
+    endfor
+endfunction
 
 
 " Enemy
@@ -292,6 +306,38 @@ function! s:enemy_new(x, y, speed)
     \   'move_dir': dir,
     \}, 'force')
 endfunction
+function! s:enemy.move()
+    let self.speed_counter += 1
+    if self.speed_counter <# self.speed
+        return
+    endif
+    " Move!
+    let self.speed_counter = 0
+
+    " Choose next direction.
+    let dirs = copy(s:DIR)
+    while !empty(dirs)
+        " Move to `self.move_dir`.
+        let dx = s:DIR[self.move_dir].dx
+        let dy = s:DIR[self.move_dir].dy
+        let x  = self.x + dx
+        let y  = self.y + dy
+        let mark_type = s:field_coord_get_mark_type(x, y)
+        if mark_type is s:MARK_FEED
+        \   || mark_type is s:MARK_FREE_SPACE
+            " Update s:field.enemy_map
+            call s:field_update_enemy_coord(self)
+            return
+        else
+            " If enemy can't go to next coord,
+            " try another directions.
+            unlet dirs[self.move_dir]
+            let self.move_dir = keys(dirs)[s:rand(len(dirs))]
+        endif
+    endwhile
+
+    throw "enemy: Can't move to anywhere!"
+endfunction
 
 
 
@@ -302,6 +348,7 @@ function! s:main_loop()
         undo
     endif
     call b:pacman.current_table.func()
+    call s:field_move_all_enemies()
     let b:pacman.previous_changedtick = b:changedtick
 endfunction
 
