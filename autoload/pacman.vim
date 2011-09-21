@@ -276,6 +276,7 @@ let s:state = 'loading'
 let s:state_table = {}
 
 
+" TODO: Implement main menu scene.
 " --------- loading ---------
 let s:state_table.loading = s:create_table({
 \   'count': 0,
