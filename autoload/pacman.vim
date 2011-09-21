@@ -140,7 +140,6 @@ endfunction
 let s:field = {
 \   'map': [],
 \   '__drawn_map': [],
-\   'enemy_map': [],
 \   'enemies': [],
 \   'feed_num': -1,
 \}
@@ -195,7 +194,6 @@ function! s:choose_field()
         endfor
     endif
     let s:field.map = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
-    let s:field.enemy_map = repeat([repeat([0], len(s:field.map[0]))], len(s:field.map))
     let s:field.__drawn_map = []
 endfunction
 function! s:initialize_field()
@@ -218,7 +216,7 @@ function! s:initialize_field()
             elseif s:field.map[y][x] ==# s:CHAR_FEED
                 let s:field.feed_num += 1
             elseif s:field.map[y][x] ==# s:CHAR_ENEMY
-                call s:field_register_enemy(s:enemy_new(x, y, 2))
+                call add(s:field.enemies, s:enemy_new(x, y, 2))
                 call s:field_set(s:CHAR_FREE_SPACE, x, y)
             endif
         endfor
@@ -245,10 +243,6 @@ function! s:field_set(char, x, y)
 endfunction
 function! s:field_drawn_set(char, x, y)
     call s:__field_set(s:field.__drawn_map, a:char, a:x, a:y)
-endfunction
-function! s:field_enemy_set(bool, x, y)
-    let s:field.enemy_map[a:y][a:x] = a:bool
-    let s:field.__drawn_map = []
 endfunction
 function! s:__field_set(map, char, x, y)
     if a:y <# 0 || a:y >=# len(a:map)
@@ -277,15 +271,10 @@ function! s:field_get_map()
     endif
     return s:field.__drawn_map
 endfunction
-function! s:field_register_enemy(enemy)
-    call s:field_enemy_set(1, a:enemy.x, a:enemy.y)
-    call add(s:field.enemies, a:enemy)
-endfunction
 function! s:field_update_enemy_coord(enemy)
-    call s:field_enemy_set(0, a:enemy.x, a:enemy.y)
+    let s:field.__drawn_map = []
     let a:enemy.x += s:DIR[a:enemy.move_dir].dx
     let a:enemy.y += s:DIR[a:enemy.move_dir].dy
-    call s:field_enemy_set(1, a:enemy.x, a:enemy.y)
 endfunction
 function! s:field_move_all_enemies()
     for enemy in s:field.enemies
@@ -372,7 +361,7 @@ function! s:enemy.move()
         let mark_type = s:field_coord_get_mark_type(x, y)
         if mark_type is s:MARK_FEED
         \   || mark_type is s:MARK_FREE_SPACE
-            " Update s:field.enemy_map
+            " Update enemies' coords.
             call s:field_update_enemy_coord(self)
             return
         else
