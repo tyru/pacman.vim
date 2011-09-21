@@ -139,6 +139,7 @@ endfunction
 " TODO: Implement field auto-generation.
 let s:field = {
 \   'map': [],
+\   '__drawn_map': [],
 \   'enemy_map': [],
 \   'enemies': [],
 \   'feed_num': -1,
@@ -194,11 +195,12 @@ function! s:choose_field()
         endfor
     endif
     let s:field.map = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
+    let s:field.enemy_map = repeat([repeat([0], len(s:field.map[0]))], len(s:field.map))
+    let s:field.__drawn_map = []
 endfunction
 function! s:initialize_field()
     let start_point_coord = {'x': -1, 'y': -1}
     let s:field.feed_num = 0
-    let s:field.enemy_map = repeat([repeat([0], len(s:field.map[0]))], len(s:field.map))
     let s:field.enemies = []
     " Scan field.
     for y in range(len(s:field.map))
@@ -217,7 +219,7 @@ function! s:initialize_field()
                 let s:field.feed_num += 1
             elseif s:field.map[y][x] ==# s:CHAR_ENEMY
                 call s:field_register_enemy(s:enemy_new(x, y, 2))
-                call s:field_set_char(s:CHAR_FREE_SPACE, x, y)
+                call s:field_set(s:CHAR_FREE_SPACE, x, y)
             endif
         endfor
     endfor
@@ -230,23 +232,34 @@ function! s:initialize_field()
 endfunction
 function! s:move_to_start_point(x, y)
     " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
-    call s:field_set_char(s:CHAR_FREE_SPACE, a:x, a:y)
+    call s:field_set(s:CHAR_FREE_SPACE, a:x, a:y)
     " Move cursor to free space. (not wall)
     call cursor(a:y + 1, a:x + 1)
 endfunction
 
 " Vim does not support assignment to a character of String...
 "let s:field.map[a:y][a:x]  = s:CHAR_START_POINT
-function! s:field_set_char(char, x, y)
-    if a:y <# 0 || a:y >=# len(s:field.map)
-    \   || a:x <# 0 || a:x >=# len(s:field.map[a:y])
+function! s:field_set(char, x, y)
+    call s:__field_set(s:field.map, a:char, a:x, a:y)
+    let s:field.__drawn_map = []
+endfunction
+function! s:field_drawn_set(char, x, y)
+    call s:__field_set(s:field.__drawn_map, a:char, a:x, a:y)
+endfunction
+function! s:field_enemy_set(bool, x, y)
+    let s:field.enemy_map[a:y][a:x] = a:bool
+    let s:field.__drawn_map = []
+endfunction
+function! s:__field_set(map, char, x, y)
+    if a:y <# 0 || a:y >=# len(a:map)
+    \   || a:x <# 0 || a:x >=# len(a:map[a:y])
     \   || strlen(a:char) !=# 1
         return
     endif
-    let line = s:field.map[a:y]
+    let line = a:map[a:y]
     let middle_left = (a:x ==# 0 ? '' : line[: a:x - 1])
     let middle_right = (a:x ==# len(line) - 1 ? '' : line[a:x + 1 :])
-    let s:field.map[a:y] = middle_left . a:char . middle_right
+    let a:map[a:y] = middle_left . a:char . middle_right
 endfunction
 function! s:field_get_feed_num()
     return s:field.feed_num
@@ -255,17 +268,24 @@ function! s:field_dec_feed_num()
     let s:field.feed_num -= 1
 endfunction
 function! s:field_get_map()
-    return s:field.map
+    if empty(s:field.__drawn_map)
+        let s:field.__drawn_map = deepcopy(s:field.map)
+        " Place enemies on `s:field.map`.
+        for enemy in s:field.enemies
+            call s:field_drawn_set(s:CHAR_ENEMY, enemy.x, enemy.y)
+        endfor
+    endif
+    return s:field.__drawn_map
 endfunction
 function! s:field_register_enemy(enemy)
-    let s:field.enemy_map[a:enemy.y][a:enemy.x] = 1
+    call s:field_enemy_set(1, a:enemy.x, a:enemy.y)
     call add(s:field.enemies, a:enemy)
 endfunction
 function! s:field_update_enemy_coord(enemy)
-    let s:field.enemy_map[a:enemy.y][a:enemy.x] = 0
+    call s:field_enemy_set(0, a:enemy.x, a:enemy.y)
     let a:enemy.x += s:DIR[a:enemy.move_dir].dx
     let a:enemy.y += s:DIR[a:enemy.move_dir].dy
-    let s:field.enemy_map[a:enemy.y][a:enemy.x] = 1
+    call s:field_enemy_set(1, a:enemy.x, a:enemy.y)
 endfunction
 function! s:field_move_all_enemies()
     for enemy in s:field.enemies
@@ -516,7 +536,7 @@ function! s:state_table.main.on_key(key)
         return a:key
     elseif mark_type ==# s:MARK_FEED
         " Ate it. Mark here as a free space...
-        call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
+        call s:field_set(s:CHAR_FREE_SPACE, coord.x, coord.y)
         " Decrement the number of feeds in this field.map.
         call s:field_dec_feed_num()
         if s:field_get_feed_num() <=# 0
