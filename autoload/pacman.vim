@@ -511,7 +511,7 @@ function! s:state_table.main.draw_field()
 endfunction
 function! s:state_table.main.on_key(key)
     if !has_key(s:DIR, a:key)
-        return
+        return ''
     endif
     let dx = s:DIR[a:key].dx
     let dy = s:DIR[a:key].dy
