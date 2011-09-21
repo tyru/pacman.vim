@@ -376,6 +376,9 @@ endfunction
 " Vim does not support assignment to a character of String...
 "let s:field.map[a:y][a:x]  = s:CHAR_START_POINT
 function! s:field_set_char(char, x, y)
+    if a:char ==# s:field_get_char(a:x, a:y)
+        return
+    endif
     call s:__field_set(s:field.map, a:char, a:x, a:y)
     let s:field.__drawn_map = []
 endfunction
