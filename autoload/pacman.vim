@@ -229,9 +229,6 @@ let s:CHAR_TO_MARK_TYPE_TABLE = {
 function! s:get_mark_type(c)
     return get(s:CHAR_TO_MARK_TYPE_TABLE, a:c, s:MARK_WALL)
 endfunction
-function! s:field_coord_get_mark_type(x, y)
-    return s:get_mark_type(s:field.map[a:y][a:x])
-endfunction
 
 function! s:choose_field()
     if empty(s:FIELDS)
@@ -412,6 +409,9 @@ function! s:field_get_map()
     endif
     return s:field.__drawn_map
 endfunction
+function! s:field_get_char(x, y)
+    return s:field.map[a:y][a:x]
+endfunction
 function! s:field_update_enemy_coord(enemy)
     let s:field.__drawn_map = []
     let a:enemy.x += s:DIR[a:enemy.move_dir].dx
@@ -501,7 +501,7 @@ function! s:enemy.move()
         let dy = s:DIR[self.move_dir].dy
         let x  = self.x + dx
         let y  = self.y + dy
-        let mark_type = s:field_coord_get_mark_type(x, y)
+        let mark_type = s:get_mark_type(s:field_get_char(x, y))
         if mark_type is s:MARK_FEED
         \   || mark_type is s:MARK_FREE_SPACE
             " Update enemies' coords.
