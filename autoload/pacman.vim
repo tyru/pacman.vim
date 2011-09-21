@@ -138,6 +138,34 @@ endfunction
 " ---------------------- Vim Interface for Pacman end ---------------------- }}}
 
 
+" ---------------------- Utilities ---------------------- {{{
+
+function! s:echomsg(hl, msg)
+    try
+        execute 'echohl' a:hl
+        echomsg a:msg
+    finally
+        echohl None
+    endtry
+endfunction
+function! s:rand(n)
+    let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
+    return reltimestr(reltime())[match_end : ] % a:n
+endfunction
+" Return empty string for 'on_key()'
+function! s:nop(...)
+    return ''
+endfunction
+function! s:SID()
+    return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+endfunction
+function! s:localfunc(name)
+    return function('<SNR>'.s:SID().'_'.a:name)
+endfunction
+
+" ---------------------- Utilities end ---------------------- }}}
+
+
 " ---------------------- Field ---------------------- {{{
 
 " TODO: Implement field auto-generation.
@@ -581,34 +609,6 @@ endfunction
 lockvar! s:state_table
 
 " ---------------------- Scenes end ---------------------- }}}
-
-
-" ---------------------- Utilities ---------------------- {{{
-
-function! s:echomsg(hl, msg)
-    try
-        execute 'echohl' a:hl
-        echomsg a:msg
-    finally
-        echohl None
-    endtry
-endfunction
-function! s:rand(n)
-    let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
-    return reltimestr(reltime())[match_end : ] % a:n
-endfunction
-" Return empty string for 'on_key()'
-function! s:nop(...)
-    return ''
-endfunction
-function! s:SID()
-    return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
-endfunction
-function! s:localfunc(name)
-    return function('<SNR>'.s:SID().'_'.a:name)
-endfunction
-
-" ---------------------- Utilities end ---------------------- }}}
 
 
 " Restore 'cpoptions' {{{
