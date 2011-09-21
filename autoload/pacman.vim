@@ -465,11 +465,14 @@ endfunction
 
 " --------- main ---------
 let s:state_table.main = s:create_table({
-\   'move_count': 0,
-\   'left_time': 999,
 \   'moving_to_next_stage': 0,
+\   '__start_time': -1,
 \})
 function! s:state_table.main.func()
+    if self.__start_time is -1
+        let self.__start_time = localtime() + 999
+    endif
+
     if self.moving_to_next_stage
         " Draw current field before moving to next stage.
         " Because the last `s:CHAR_FEED` remains in a buffer.
@@ -481,11 +484,10 @@ function! s:state_table.main.func()
     endif
 
     " Time is over!!
-    if self.left_time is 0
+    if self.get_left_time() is 0
         call s:set_state('gameover')
         return
     endif
-    let self.left_time -= 1
     " Draw a field.
     call self.draw_field()
 endfunction
@@ -497,7 +499,7 @@ function! s:state_table.main.draw_field()
         call s:field_draw_field()
         call s:field_draw_append([
         \   '',
-        \   'Left Time: ' . self.left_time,
+        \   'Left Time: ' . self.get_left_time(),
         \])
     finally
         call setpos('.', pos)
@@ -515,13 +517,6 @@ endfunction
 function! s:state_table.main.move_player(key)
     let dx = s:DIR[a:key].dx
     let dy = s:DIR[a:key].dy
-
-    " Do `let self.left_time -= 1` once per 5 times.
-    if self.move_count is 5
-        let self.left_time -= 1
-        let self.move_count = 0
-    endif
-    let self.move_count += 1
 
     let coord = {'x': col('.') - 1 + dx, 'y': line('.') - 1 + dy}
     let line = getline(coord.y + 1)
@@ -547,6 +542,9 @@ function! s:state_table.main.move_player(key)
     else " s:MARK_WALL, and others
         return ''
     endif
+endfunction
+function! s:state_table.main.get_left_time()
+    return self.__start_time - localtime()
 endfunction
 " --------- main end ---------
 
