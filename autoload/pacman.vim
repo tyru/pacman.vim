@@ -339,7 +339,7 @@ function! s:field_get_init_info(c, x, y, stash)
     let headers = a:stash.headers
     if has_key(headers, c)
         " Expand header (macro).
-        call s:field_set(headers[c].char, x, y)
+        call s:field_set_char(headers[c].char, x, y)
         if has_key(headers[c], 'action')
             let s:field.enemy_action_map[y][x] =
             \   s:ACTION[headers[c].action]
@@ -359,7 +359,7 @@ function! s:field_get_init_info(c, x, y, stash)
         let s:field.feed_num += 1
     elseif c ==# s:CHAR_ENEMY
         call add(s:field.enemies, s:enemy_new(x, y, 2))
-        call s:field_set(s:CHAR_FREE_SPACE, x, y)
+        call s:field_set_char(s:CHAR_FREE_SPACE, x, y)
     endif
 endfunction
 function! s:move_to_start_point()
@@ -371,18 +371,18 @@ function! s:move_to_start_point()
         throw 'No start point found in a field.'
     endif
     " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
-    call s:field_set(s:CHAR_FREE_SPACE, x, y)
+    call s:field_set_char(s:CHAR_FREE_SPACE, x, y)
     " Move cursor to free space. (not wall)
     call cursor(y + 1, x + 1)
 endfunction
 
 " Vim does not support assignment to a character of String...
 "let s:field.map[a:y][a:x]  = s:CHAR_START_POINT
-function! s:field_set(char, x, y)
+function! s:field_set_char(char, x, y)
     call s:__field_set(s:field.map, a:char, a:x, a:y)
     let s:field.__drawn_map = []
 endfunction
-function! s:field_drawn_set(char, x, y)
+function! s:field_drawn_set_char(char, x, y)
     call s:__field_set(s:field.__drawn_map, a:char, a:x, a:y)
 endfunction
 function! s:__field_set(map, char, x, y)
@@ -407,7 +407,7 @@ function! s:field_get_map()
         let s:field.__drawn_map = deepcopy(s:field.map)
         " Place enemies on `s:field.map`.
         for enemy in s:field.enemies
-            call s:field_drawn_set(s:CHAR_ENEMY, enemy.x, enemy.y)
+            call s:field_drawn_set_char(s:CHAR_ENEMY, enemy.x, enemy.y)
         endfor
     endif
     return s:field.__drawn_map
@@ -663,7 +663,7 @@ function! s:state_table.main.move_player(key)
         return a:key
     elseif mark_type ==# s:MARK_FEED
         " Ate it. Mark here as a free space...
-        call s:field_set(s:CHAR_FREE_SPACE, coord.x, coord.y)
+        call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
         " Decrement the number of feeds in this field.map.
         call s:field_dec_feed_num()
         if s:field_get_feed_num() <=# 0
