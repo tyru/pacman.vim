@@ -339,12 +339,6 @@ endfunction
 let s:state_table.main = s:create_table({
 \   'move_count': 0,
 \   'left_time': 999,
-\   'keys': {
-\       'j': {'dx':  0, 'dy': +1},
-\       'k': {'dx':  0, 'dy': -1},
-\       'h': {'dx': -1, 'dy': 0},
-\       'l': {'dx': +1, 'dy': 0},
-\   },
 \   'moving_to_next_stage': 0,
 \})
 function! s:state_table.main.func()
@@ -375,11 +369,11 @@ function! s:state_table.main.draw_field()
     \])
 endfunction
 function! s:state_table.main.on_key(key)
-    if !has_key(self.keys, a:key)
+    if !has_key(s:DIR, a:key)
         return
     endif
-    let dx = self.keys[a:key].dx
-    let dy = self.keys[a:key].dy
+    let dx = s:DIR[a:key].dx
+    let dy = s:DIR[a:key].dy
 
     " Do `let self.left_time -= 1` once per 5 times.
     if self.move_count is 5
