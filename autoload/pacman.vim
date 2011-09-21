@@ -513,6 +513,12 @@ function! s:state_table.main.on_key(key)
     if !has_key(s:DIR, a:key)
         return ''
     endif
+    " Move enemies.
+    call s:field_move_all_enemies()
+    " Move player.
+    return self.move_player(a:key)
+endfunction
+function! s:state_table.main.move_player(key)
     let dx = s:DIR[a:key].dx
     let dy = s:DIR[a:key].dy
 
