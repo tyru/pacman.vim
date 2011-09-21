@@ -578,10 +578,6 @@ function! s:state_table.gameover.func()
 endfunction
 " --------- gameover end ---------
 
-" --------- pause ---------
-let s:state_table.pause = s:create_table()
-" --------- pause end ---------
-
 lockvar! s:state_table
 
 
