@@ -549,7 +549,7 @@ endfunction
 let s:state_table.next_stage = s:create_table()
 function! s:state_table.next_stage.func()
     " Delete the last line.
-    call s:field_clear_last_lnum()
+    call s:field_clear_last_line()
     redraw
     " All lines were deleted.
     if line('$') is 1 && getline(1) ==# ''
