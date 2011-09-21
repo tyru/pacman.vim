@@ -137,7 +137,12 @@ endfunction
 
 
 " TODO: Implement field auto-generation.
-let s:field = {'map': [], 'feed_num': -1}
+let s:field = {
+\   'map': [],
+\   'enemy_map': [],
+\   'enemies': [],
+\   'feed_num': -1,
+\}
 let s:FIELDS = []
 
 let s:CHAR_START_POINT = '+'
@@ -190,6 +195,8 @@ endfunction
 function! s:initialize_field()
     let start_point_coord = {'x': -1, 'y': -1}
     let s:field.feed_num = 0
+    let s:field.enemy_map = repeat([repeat([0], len(s:field.map[0]))], len(s:field.map))
+    let s:field.enemies = []
     " Scan field.
     for y in range(len(s:field.map))
         for x in range(len(s:field.map[y]))
@@ -205,6 +212,8 @@ function! s:initialize_field()
                 let start_point_coord.y = y
             elseif s:field.map[y][x] ==# s:CHAR_FEED
                 let s:field.feed_num += 1
+            elseif s:field.map[y][x] ==# s:CHAR_ENEMY
+                call s:field_register_enemy(s:enemy_new(x, y, 1))
             endif
         endfor
     endfor
@@ -243,6 +252,10 @@ function! s:field_dec_feed_num()
 endfunction
 function! s:field_get_map()
     return s:field.map
+endfunction
+function! s:field_register_enemy(enemy)
+    let s:field.enemy_map[a:enemy.y][a:enemy.x] = 1
+    call add(s:field.enemies, a:enemy)
 endfunction
 
 
