@@ -200,8 +200,19 @@ let s:DIR = {
 \   s:DIR_RIGHT : {'dx': +1, 'dy': 0},
 \}
 
-function! s:enemy_action_turn()
-    " TODO
+function! s:enemy_action_turn(enemy)
+    " Get rid current direction from options.
+    let dirs = copy(s:DIR)
+    for dir in keys(dirs)
+        if dir ==# a:enemy.move_dir
+            unlet dirs[dir]
+            break
+        endif
+    endfor
+    call s:assert(len(dirs) is len(s:DIR) - 1,
+    \   'dirs: removed 1 key/value.')
+    " Choose next direction! (except current direction)
+    let a:enemy.move_dir = a:enemy.choose_next_dir(dirs)
 endfunction
 
 let s:ACTION_NOP = 'nop'
@@ -425,6 +436,9 @@ function! s:field_move_all_enemies()
         call enemy.move()
     endfor
 endfunction
+function! s:field_get_enemy_action(x, y)
+    return s:field.enemy_action_map[a:y][a:x]
+endfunction
 function! s:field_draw_text(lnum, text)
     call setline(a:lnum, a:text)
 endfunction
@@ -494,30 +508,39 @@ function! s:enemy.move()
         return
     endif
     let self.speed_counter = 0
-
     " Choose next direction.
-    let dirs = copy(s:DIR)
-    while !empty(dirs)
-        " Move to `self.move_dir`.
-        let dx = s:DIR[self.move_dir].dx
-        let dy = s:DIR[self.move_dir].dy
-        let x  = self.x + dx
-        let y  = self.y + dy
-        let mark_type = s:get_mark_type(s:field_get_char(x, y))
+    let self.move_dir = self.choose_next_dir(copy(s:DIR))
+    call s:field_update_enemy_coord(self)
+    " Do enemy action.
+    let coord = self.get_next_coord(self.move_dir)
+    call s:field_get_enemy_action(coord.x, coord.y)(self)
+endfunction
+function! s:enemy.choose_next_dir(dirs)
+    let move_dir = has_key(a:dirs, self.move_dir) ?
+    \               self.move_dir : keys(a:dirs)[s:rand(len(a:dirs))]
+    while !empty(a:dirs)
+        " Move to `move_dir`.
+        let coord = self.get_next_coord(move_dir)
+        let mark_type = s:get_mark_type(s:field_get_char(coord.x, coord.y))
         if mark_type is s:MARK_FEED
         \   || mark_type is s:MARK_FREE_SPACE
-            " Update enemies' coords.
-            call s:field_update_enemy_coord(self)
-            return
+            return move_dir
         else
             " If enemy can't go to next coord,
             " try another directions.
-            unlet dirs[self.move_dir]
-            let self.move_dir = keys(dirs)[s:rand(len(dirs))]
+            unlet a:dirs[move_dir]
+            let move_dir = keys(a:dirs)[s:rand(len(a:dirs))]
         endif
     endwhile
 
     throw "enemy: Can't go to anywhere!"
+endfunction
+function! s:enemy.get_next_coord(move_dir)
+    let dx = s:DIR[a:move_dir].dx
+    let dy = s:DIR[a:move_dir].dy
+    let x  = self.x + dx
+    let y  = self.y + dy
+    return {'x': x, 'y': y}
 endfunction
 
 " ---------------------- Enemy end ---------------------- }}}
