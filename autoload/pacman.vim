@@ -232,37 +232,49 @@ function! s:choose_field()
     let s:field.enemies = []
 endfunction
 function! s:initialize_field()
-    let start_point_coord = {'x': -1, 'y': -1}
     " Clear previous data.
     let s:field.__drawn_map = []
     let s:field.feed_num = 0
     let s:field.enemies = []
     " Scan field.
-    for y in range(len(s:field.map))
-        for x in range(len(s:field.map[y]))
-            if s:field.map[y][x] ==# s:CHAR_START_POINT
-                if start_point_coord.x isnot -1
-                \   && start_point_coord.y isnot -1
-                    call s:echomsg('WarningMsg', 'warning: '
-                    \   . 'there must be start point only one '
-                    \   . 'in a field. ignoring...')
-                    continue
-                endif
-                let start_point_coord.x = x
-                let start_point_coord.y = y
-            elseif s:field.map[y][x] ==# s:CHAR_FEED
-                let s:field.feed_num += 1
-            elseif s:field.map[y][x] ==# s:CHAR_ENEMY
-                call add(s:field.enemies, s:enemy_new(x, y, 2))
-                call s:field_set(s:CHAR_FREE_SPACE, x, y)
-            endif
-        endfor
-    endfor
+    let start_point_coord = {'x': -1, 'y': -1}
+    call s:field_scan(s:field.map, 's:field_get_init_info', {
+    \   'start_point_coord' : start_point_coord,
+    \})
     if start_point_coord.x is -1
     \   || start_point_coord.y is -1
         throw 'No start point found in a field.'
     else
         call s:move_to_start_point(start_point_coord.x, start_point_coord.y)
+    endif
+endfunction
+function! s:field_scan(map, func, stash)
+    for y in range(len(a:map))
+        for x in range(len(a:map[y]))
+            call call(a:func, [a:map[y][x], x, y, a:stash])
+        endfor
+    endfor
+endfunction
+function! s:field_get_init_info(c, x, y, stash)
+    let c = a:c
+    let x = a:x
+    let y = a:y
+    let start_point_coord = a:stash.start_point_coord
+    if c ==# s:CHAR_START_POINT
+        if start_point_coord.x isnot -1
+        \   && start_point_coord.y isnot -1
+            call s:echomsg('WarningMsg', 'warning: '
+            \   . 'there must be start point only one '
+            \   . 'in a field. ignoring...')
+            continue
+        endif
+        let start_point_coord.x = x
+        let start_point_coord.y = y
+    elseif c ==# s:CHAR_FEED
+        let s:field.feed_num += 1
+    elseif c ==# s:CHAR_ENEMY
+        call add(s:field.enemies, s:enemy_new(x, y, 2))
+        call s:field_set(s:CHAR_FREE_SPACE, x, y)
     endif
 endfunction
 function! s:move_to_start_point(x, y)
