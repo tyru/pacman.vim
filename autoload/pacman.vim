@@ -484,7 +484,7 @@ function! s:state_table.main.func()
     endif
 
     " Time is over!!
-    if self.get_left_time() is 0
+    if self.get_left_time() <=# 0
         call s:set_state('gameover')
         return
     endif
