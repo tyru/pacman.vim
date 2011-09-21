@@ -65,7 +65,7 @@ function! s:create_buffer()
     \   '0', '^', '$',
     \   'i', 'a', 'A',
     \   '/', '?',
-    \   's', 'S', 'c', 'C', 'd', 'D',
+    \   's', 'S', 'c', 'C', 'd', 'D', 'r', 'R',
     \]
         execute 'nnoremap <buffer>' key '<Nop>'
     endfor
