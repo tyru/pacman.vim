@@ -173,6 +173,7 @@ let s:field = {
 \   'map': [],
 \   '__drawn_map': [],
 \   'enemies': [],
+\   'start_point_coord': {'x': -1, 'y': -1},
 \   'feed_num': -1,
 \}
 let s:FIELDS = []
@@ -226,27 +227,17 @@ function! s:choose_field()
         endfor
     endif
     let s:field.map = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
-    " Clear previous data.
-    let s:field.__drawn_map = []
-    let s:field.feed_num = 0
-    let s:field.enemies = []
+    call s:initialize_field()
 endfunction
 function! s:initialize_field()
     " Clear previous data.
+    let s:field.start_point_coord.x = -1
+    let s:field.start_point_coord.y = -1
     let s:field.__drawn_map = []
     let s:field.feed_num = 0
     let s:field.enemies = []
     " Scan field.
-    let start_point_coord = {'x': -1, 'y': -1}
-    call s:field_scan(s:field.map, 's:field_get_init_info', {
-    \   'start_point_coord' : start_point_coord,
-    \})
-    if start_point_coord.x is -1
-    \   || start_point_coord.y is -1
-        throw 'No start point found in a field.'
-    else
-        call s:move_to_start_point(start_point_coord.x, start_point_coord.y)
-    endif
+    call s:field_scan(s:field.map, 's:field_get_init_info', {})
 endfunction
 function! s:field_scan(map, func, stash)
     for y in range(len(a:map))
@@ -259,7 +250,7 @@ function! s:field_get_init_info(c, x, y, stash)
     let c = a:c
     let x = a:x
     let y = a:y
-    let start_point_coord = a:stash.start_point_coord
+    let start_point_coord = s:field.start_point_coord
     if c ==# s:CHAR_START_POINT
         if start_point_coord.x isnot -1
         \   && start_point_coord.y isnot -1
@@ -277,11 +268,18 @@ function! s:field_get_init_info(c, x, y, stash)
         call s:field_set(s:CHAR_FREE_SPACE, x, y)
     endif
 endfunction
-function! s:move_to_start_point(x, y)
+function! s:move_to_start_point()
+    let coord = s:field.start_point_coord
+    let x = coord.x
+    let y = coord.y
+    if y <# 0 || y >=# len(s:field.map)
+    \   || x <# 0 || x >=# len(s:field.map[0])
+        throw 'No start point found in a field.'
+    endif
     " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
-    call s:field_set(s:CHAR_FREE_SPACE, a:x, a:y)
+    call s:field_set(s:CHAR_FREE_SPACE, x, y)
     " Move cursor to free space. (not wall)
-    call cursor(a:y + 1, a:x + 1)
+    call cursor(y + 1, x + 1)
 endfunction
 
 " Vim does not support assignment to a character of String...
@@ -485,7 +483,7 @@ function! s:state_table.setup.func()
     call s:choose_field()
     call s:field_clear_field()
     call s:field_draw_field_delay(200)
-    call s:initialize_field()
+    call s:move_to_start_point()
 
     call s:set_state('main')
 endfunction
@@ -497,7 +495,7 @@ function! s:state_table.fast_setup.func()
     call s:choose_field()
     call s:field_clear_field()
     call s:field_draw_field()
-    call s:initialize_field()
+    call s:move_to_start_point()
 
     call s:set_state('main')
 endfunction
