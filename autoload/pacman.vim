@@ -144,6 +144,17 @@ let s:CHAR_START_POINT = '+'
 let s:CHAR_FREE_SPACE = ' '
 let s:CHAR_FEED = '$'
 
+let s:DIR_DOWN = 'j'
+let s:DIR_UP = 'k'
+let s:DIR_LEFT = 'h'
+let s:DIR_RIGHT = 'l'
+let s:DIR = {
+\   s:DIR_DOWN  : {'dx':  0, 'dy': +1},
+\   s:DIR_UP    : {'dx':  0, 'dy': -1},
+\   s:DIR_LEFT  : {'dx': -1, 'dy': 0},
+\   s:DIR_RIGHT : {'dx': +1, 'dy': 0},
+\}
+
 " No `s:MARK_START_POINT` because
 " `s:CHAR_START_POINT` is replaced with `s:CHAR_FREE_SPACE`.
 " s:MARK_* constants is only needed for detection of
