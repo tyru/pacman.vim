@@ -575,6 +575,7 @@ function! s:state_table.gameover.func()
     \   ' #    #  #    #  #    #  #       #    #   #  #   #       #   #',
     \   '  ####   #    #  #    #  ######   ####     ##    ######  #    #',
     \], 200)
+    call s:pause()
 endfunction
 " --------- gameover end ---------
 
