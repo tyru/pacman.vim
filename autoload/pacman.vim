@@ -346,12 +346,13 @@ function! s:field_get_init_info(c, x, y, stash)
     let start_point_coord = s:field.start_point_coord
     let headers = a:stash.headers
     if has_key(headers, c)
-        " Expand header (macro).
-        call s:field_set_char(headers[c].char, x, y)
         if has_key(headers[c], 'action')
             let s:field.enemy_action_map[y][x] =
             \   s:ACTION[headers[c].action]
         endif
+        " Expand header (macro).
+        call s:field_set_char(headers[c].char, x, y)
+        let c = headers[c].char
     endif
     if c ==# s:CHAR_START_POINT
         if start_point_coord.x isnot -1
