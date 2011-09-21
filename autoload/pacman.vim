@@ -271,6 +271,32 @@ function! s:field_move_all_enemies()
         call enemy.move()
     endfor
 endfunction
+function! s:field_draw_text(lnum, text)
+    call setline(a:lnum, a:text)
+endfunction
+function! s:field_draw_field_delay(ms)
+    return s:field_draw_lines_delay(1, s:field_get_map(), a:ms)
+endfunction
+function! s:field_draw_field()
+    call setline(1, s:field_get_map())
+endfunction
+function! s:field_draw_append(lines)
+    call setline(line('$') + 1, a:lines)
+endfunction
+function! s:field_clear_field()
+    %delete _
+endfunction
+function! s:field_clear_last_line()
+    $delete _
+endfunction
+function! s:field_draw_lines_delay(lnum, lines, ms)
+    for i in range(len(a:lines))
+        let lnum = a:lnum + (i ==# 0 ? 0 : line('$'))
+        call setline(lnum, a:lines[i])
+        redraw
+        execute 'sleep' a:ms.'m'
+    endfor
+endfunction
 
 
 " Enemy
@@ -388,13 +414,13 @@ let s:state_table.loading = s:create_table({
 function! s:state_table.loading.func()
     if self.count is 10
         call s:set_state('setup')
-        call setline(1, 'load what? :p')
+        call s:field_draw_text(1, 'load what? :p')
         redraw
         sleep 1
         return
     endif
     let self.count += 1
-    call setline(1, self.graph[self.count % len(self.graph)])
+    call s:field_draw_text(1, self.graph[self.count % len(self.graph)])
 endfunction
 " --------- loading end ---------
 
@@ -402,13 +428,8 @@ endfunction
 let s:state_table.setup = s:create_table()
 function! s:state_table.setup.func()
     call s:choose_field()
-    %delete _
-    let map = s:field_get_map()
-    for i in range(len(map))
-        call setline(i ==# 0 ? 1 : line('$') + 1, map[i])
-        redraw
-        sleep 200m
-    endfor
+    call s:field_clear_field()
+    call s:field_draw_field_delay(200)
     call s:initialize_field()
 
     call s:set_state('main')
@@ -419,8 +440,8 @@ endfunction
 let s:state_table.fast_setup = s:create_table()
 function! s:state_table.fast_setup.func()
     call s:choose_field()
-    %delete _
-    call setline(1, s:field_get_map())
+    call s:field_clear_field()
+    call s:field_draw_field()
     call s:initialize_field()
 
     call s:set_state('main')
@@ -455,10 +476,17 @@ function! s:state_table.main.func()
 endfunction
 function! s:state_table.main.draw_field()
     " TODO: Draw only changed point(s)
-    call setline(1, s:field_get_map() + [
-    \   '',
-    \   'Left Time: ' . self.left_time,
-    \])
+    let pos = getpos('.')
+    try
+        call s:field_clear_field()
+        call s:field_draw_field()
+        call s:field_draw_append([
+        \   '',
+        \   'Left Time: ' . self.left_time,
+        \])
+    finally
+        call setpos('.', pos)
+    endtry
 endfunction
 function! s:state_table.main.on_key(key)
     if !has_key(s:DIR, a:key)
@@ -505,7 +533,7 @@ endfunction
 let s:state_table.next_stage = s:create_table()
 function! s:state_table.next_stage.func()
     " Delete the last line.
-    $delete _
+    call s:field_clear_last_lnum()
     redraw
     " All lines were deleted.
     if line('$') is 1 && getline(1) ==# ''
@@ -517,15 +545,15 @@ endfunction
 " --------- gameover ---------
 let s:state_table.gameover = s:create_table()
 function! s:state_table.gameover.func()
-    %delete _
-    a
-  ####     ##    #    #  ######   ####   #    #  ######  #####
- #    #   #  #   ##  ##  #       #    #  #    #  #       #    #
- #       #    #  # ## #  #####   #    #  #    #  #####   #    #
- #  ###  ######  #    #  #       #    #  #    #  #       #####
- #    #  #    #  #    #  #       #    #   #  #   #       #   #
-  ####   #    #  #    #  ######   ####     ##    ######  #    #
-.
+    call s:field_clear_field()
+    call s:field_draw_lines_delay(1, [
+    \   '  ####     ##    #    #  ######   ####   #    #  ######  #####',
+    \   ' #    #   #  #   ##  ##  #       #    #  #    #  #       #    #',
+    \   ' #       #    #  # ## #  #####   #    #  #    #  #####   #    #',
+    \   ' #  ###  ######  #    #  #       #    #  #    #  #       #####',
+    \   ' #    #  #    #  #    #  #       #    #   #  #   #       #   #',
+    \   '  ####   #    #  #    #  ######   ####     ##    ######  #    #',
+    \], 200)
 endfunction
 " --------- gameover end ---------
 
