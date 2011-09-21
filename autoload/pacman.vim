@@ -407,18 +407,9 @@ function! s:set_state(state)
     let b:pacman.current_table = deepcopy(s:state_table[s:state])
     unlockvar! b:pacman.current_table
 endfunction
-" Return empty string for 'on_key()'
-function! s:nop(...)
-    return ''
-endfunction
+" DSL for creating table.
 function! s:create_table(...)
     return extend(copy(s:BASE_TABLE), a:0 ? copy(a:1) : {}, 'force')
-endfunction
-function! s:SID()
-    return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
-endfunction
-function! s:localfunc(name)
-    return function('<SNR>'.s:SID().'_'.a:name)
 endfunction
 
 let s:BASE_TABLE = {
@@ -605,6 +596,16 @@ endfunction
 function! s:rand(n)
     let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
     return reltimestr(reltime())[match_end : ] % a:n
+endfunction
+" Return empty string for 'on_key()'
+function! s:nop(...)
+    return ''
+endfunction
+function! s:SID()
+    return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+endfunction
+function! s:localfunc(name)
+    return function('<SNR>'.s:SID().'_'.a:name)
 endfunction
 
 " ---------------------- Utilities end ---------------------- }}}
