@@ -200,7 +200,12 @@ function! s:initialize_field()
             endif
         endfor
     endfor
-    call s:move_to_start_point(start_point_coord.x, start_point_coord.y)
+    if start_point_coord.x is -1
+    \   || start_point_coord.y is -1
+        throw 'No start point found in a field.'
+    else
+        call s:move_to_start_point(start_point_coord.x, start_point_coord.y)
+    endif
 endfunction
 function! s:move_to_start_point(x, y)
     " Rewrite s:CHAR_START_POINT to s:CHAR_FREE_SPACE.
@@ -431,6 +436,18 @@ let s:state_table.pause = s:create_table()
 " --------- pause end ---------
 
 lockvar! s:state_table
+
+
+
+
+function! s:echomsg(hl, msg)
+    try
+        execute 'echohl' a:hl
+        echomsg a:msg
+    finally
+        echohl None
+    endtry
+endfunction
 
 
 " Restore 'cpoptions' {{{
