@@ -490,7 +490,6 @@ function! s:enemy.move()
     if self.speed_counter <# self.speed
         return
     endif
-    " Move!
     let self.speed_counter = 0
 
     " Choose next direction.
@@ -515,7 +514,7 @@ function! s:enemy.move()
         endif
     endwhile
 
-    throw "enemy: Can't move to anywhere!"
+    throw "enemy: Can't go to anywhere!"
 endfunction
 
 " ---------------------- Enemy end ---------------------- }}}
