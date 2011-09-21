@@ -162,6 +162,11 @@ endfunction
 function! s:localfunc(name)
     return function('<SNR>'.s:SID().'_'.a:name)
 endfunction
+function! s:assert(cond, msg)
+    if !a:cond
+        throw 'assertion failure: '.a:msg
+    endif
+endfunction
 
 " ---------------------- Utilities end ---------------------- }}}
 
@@ -174,6 +179,7 @@ let s:field = {
 \   '__drawn_map': [],
 \   'enemies': [],
 \   'start_point_coord': {'x': -1, 'y': -1},
+\   'enemy_action_map': [],
 \   'feed_num': -1,
 \}
 let s:FIELDS = []
@@ -192,6 +198,17 @@ let s:DIR = {
 \   s:DIR_UP    : {'dx':  0, 'dy': -1},
 \   s:DIR_LEFT  : {'dx': -1, 'dy': 0},
 \   s:DIR_RIGHT : {'dx': +1, 'dy': 0},
+\}
+
+function! s:enemy_action_turn()
+    " TODO
+endfunction
+
+let s:ACTION_NOP = 'nop'
+let s:ACTION_TURN = 'turn'
+let s:ACTION = {
+\   s:ACTION_NOP : s:localfunc('nop'),
+\   s:ACTION_TURN : s:localfunc('enemy_action_turn'),
 \}
 
 " No `s:MARK_START_POINT` because
@@ -230,6 +247,17 @@ function! s:choose_field()
     call s:initialize_field()
 endfunction
 function! s:initialize_field()
+    " Parse headers.
+    let headers = s:parse_field_headers()
+    if empty(s:field.map)
+        throw 'No map data in map file.'
+    endif
+    " Generate enemy action map from s:field.map
+    " whose headers were removed.
+    let s:field.enemy_action_map = repeat(
+    \   [repeat([s:ACTION_NOP], len(s:field.map[0]))],
+    \   len(s:field.map)
+    \)
     " Clear previous data.
     let s:field.start_point_coord.x = -1
     let s:field.start_point_coord.y = -1
@@ -237,7 +265,64 @@ function! s:initialize_field()
     let s:field.feed_num = 0
     let s:field.enemies = []
     " Scan field.
-    call s:field_scan(s:field.map, 's:field_get_init_info', {})
+    call s:field_scan(s:field.map, 's:field_get_init_info', {
+    \   'headers' : headers,
+    \})
+endfunction
+function! s:parse_field_headers()
+    let headers = {}
+    let rx = '^\([^[:space:]]\)\s*=\s*\(.\+\)'
+    while !empty(s:field.map)
+        let h = s:field.map[0]
+        let m = matchlist(h, rx)
+        if empty(m) | break | endif
+
+        unlet s:field.map[0]
+        let [lhs, rhs] = m[1:2]
+        let headers[lhs] = s:parse_field_header_rhs(rhs)
+        call s:assert(has_key(headers[lhs], 'char'),
+        \   'headers[lhs] must have key "char" at least.')
+    endwhile
+    return headers
+endfunction
+function! s:parse_field_header_rhs(rhs)
+    let rhs = a:rhs
+    let result = {}
+    " e.g., "$", '*', ...
+    let char_in_quotes = ['^\(["'']\)\(.\)\1', 2]
+    let actions = ['^\('.join(keys(s:ACTION), '\|').'\)', 1]
+    let handlers = {
+    \   char_in_quotes[0] : 'char',
+    \   actions[0]        : 'action',
+    \}
+    while 1
+        let rhs = substitute(rhs, '^\s\+', '', '')
+        let last_match = []
+        for [p, idx] in [char_in_quotes, actions]
+            let last_match = matchlist(rhs, p)
+            if !empty(last_match)
+                let rhs = substitute(rhs, p, '', '')
+                let result[handlers[p]] = last_match[idx]
+                let rhs = substitute(rhs, '^\s\+', '', '')
+                if rhs ==# ''
+                    return result
+                endif
+                if rhs[0] !=# '+'
+                    throw "parse error: expected '+': "
+                    \   . string(rhs)
+                endif
+                " Found "+". go to next pattern...
+                let rhs = substitute(rhs, '^+\s*', '', '')
+                break
+            endif
+        endfor
+        if empty(last_match)
+            " No match.
+            throw 'parse error: unknown token here: '
+            \   . string(rhs)
+        endif
+    endwhile
+    throw 'never reach here!'
 endfunction
 function! s:field_scan(map, func, stash)
     for y in range(len(a:map))
@@ -251,6 +336,15 @@ function! s:field_get_init_info(c, x, y, stash)
     let x = a:x
     let y = a:y
     let start_point_coord = s:field.start_point_coord
+    let headers = a:stash.headers
+    if has_key(headers, c)
+        " Expand header (macro).
+        call s:field_set(headers[c].char, x, y)
+        if has_key(headers[c], 'action')
+            let s:field.enemy_action_map[y][x] =
+            \   s:ACTION[headers[c].action]
+        endif
+    endif
     if c ==# s:CHAR_START_POINT
         if start_point_coord.x isnot -1
         \   && start_point_coord.y isnot -1
