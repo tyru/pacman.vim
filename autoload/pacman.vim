@@ -316,10 +316,10 @@ let s:state_table.main = s:create_table({
 \   'move_count': 0,
 \   'left_time': 999,
 \   'keys': {
-\       'j': {'x':  0, 'y': +1},
-\       'k': {'x':  0, 'y': -1},
-\       'h': {'x': -1, 'y': 0},
-\       'l': {'x': +1, 'y': 0},
+\       'j': {'dx':  0, 'dy': +1},
+\       'k': {'dx':  0, 'dy': -1},
+\       'h': {'dx': -1, 'dy': 0},
+\       'l': {'dx': +1, 'dy': 0},
 \   },
 \   'moving_to_next_stage': 0,
 \})
@@ -354,8 +354,8 @@ function! s:state_table.main.on_key(key)
     if !has_key(self.keys, a:key)
         return
     endif
-    let x = self.keys[a:key].x
-    let y = self.keys[a:key].y
+    let dx = self.keys[a:key].dx
+    let dy = self.keys[a:key].dy
 
     " Do `let self.left_time -= 1` once per 5 times.
     if self.move_count is 5
@@ -364,7 +364,7 @@ function! s:state_table.main.on_key(key)
     endif
     let self.move_count += 1
 
-    let coord = {'x': col('.') - 1 + x, 'y': line('.') - 1 + y}
+    let coord = {'x': col('.') - 1 + dx, 'y': line('.') - 1 + dy}
     let line = getline(coord.y + 1)
     if coord.x <# 0 || coord.x >=# len(line)
         " Out of text! (virtualedit is "")
