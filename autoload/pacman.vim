@@ -194,10 +194,15 @@ function! s:choose_field()
         endfor
     endif
     let s:field.map = deepcopy(s:FIELDS[s:rand(len(s:FIELDS))])
+    " Clear previous data.
     let s:field.__drawn_map = []
+    let s:field.feed_num = 0
+    let s:field.enemies = []
 endfunction
 function! s:initialize_field()
     let start_point_coord = {'x': -1, 'y': -1}
+    " Clear previous data.
+    let s:field.__drawn_map = []
     let s:field.feed_num = 0
     let s:field.enemies = []
     " Scan field.
