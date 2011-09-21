@@ -13,6 +13,8 @@ if !exists('g:pacman#eat_effect')
 endif
 
 
+" ---------------------- Vim Interface for Pacman ---------------------- {{{
+
 function! s:playing()
     return exists('b:pacman')
 endfunction
@@ -133,8 +135,10 @@ function! s:clean_up()
     execute b:pacman.caller_bufnr 'buffer'
 endfunction
 
+" ---------------------- Vim Interface for Pacman end ---------------------- }}}
 
 
+" ---------------------- Field ---------------------- {{{
 
 " TODO: Implement field auto-generation.
 let s:field = {
@@ -312,9 +316,11 @@ function! s:field_draw_lines_delay(lnum, lines, ms)
         execute 'sleep' a:ms.'m'
     endfor
 endfunction
+" ---------------------- Field end ---------------------- }}}
 
 
-" Enemy
+" ---------------------- Enemy ---------------------- {{{
+
 let s:enemy = {
 \   'x': -1,
 \   'y': -1,
@@ -380,7 +386,10 @@ function! s:enemy.move()
     throw "enemy: Can't move to anywhere!"
 endfunction
 
+" ---------------------- Enemy end ---------------------- }}}
 
+
+" ---------------------- Scenes ---------------------- {{{
 
 function! s:main_loop()
     let b:pacman.previous_changedtick =
@@ -580,8 +589,10 @@ endfunction
 
 lockvar! s:state_table
 
+" ---------------------- Scenes end ---------------------- }}}
 
 
+" ---------------------- Utilities ---------------------- {{{
 
 function! s:echomsg(hl, msg)
     try
@@ -595,6 +606,8 @@ function! s:rand(n)
     let match_end = matchend(reltimestr(reltime()), '\d\+\.') + 1
     return reltimestr(reltime())[match_end : ] % a:n
 endfunction
+
+" ---------------------- Utilities end ---------------------- }}}
 
 
 " Restore 'cpoptions' {{{
