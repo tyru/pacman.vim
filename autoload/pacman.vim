@@ -186,6 +186,13 @@ function! s:initialize_field()
     for y in range(len(s:field.map))
         for x in range(len(s:field.map[y]))
             if s:field.map[y][x] ==# s:CHAR_START_POINT
+                if start_point_coord.x isnot -1
+                \   && start_point_coord.y isnot -1
+                    call s:echomsg('WarningMsg', 'warning: '
+                    \   . 'there must be start point only one '
+                    \   . 'in a field. ignoring...')
+                    continue
+                endif
                 let start_point_coord.x = x
                 let start_point_coord.y = y
             elseif s:field.map[y][x] ==# s:CHAR_FEED
