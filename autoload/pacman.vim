@@ -252,7 +252,7 @@ function! s:initialize_field()
     " Generate enemy action map from s:field.map
     " whose headers were removed.
     let s:field.enemy_action_map = repeat(
-    \   [repeat([s:ACTION_NOP], len(s:field.map[0]))],
+    \   [repeat([s:ACTION[s:ACTION_NOP]], len(s:field.map[0]))],
     \   len(s:field.map)
     \)
     " Clear previous data.
