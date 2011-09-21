@@ -246,6 +246,41 @@ function! s:field_get_map()
 endfunction
 
 
+" Enemy
+let s:enemy = {
+\   'x': -1,
+\   'y': -1,
+\   'speed': -1,
+\   'speed_counter': -1,
+\   'move_dir': s:DIR_UP,
+\}
+function! s:enemy_new(x, y, speed)
+    if a:x <# 0
+        throw 's:enemy_new(): invalid x number: '.a:x
+    endif
+    if a:y <# 0
+        throw 's:enemy_new(): invalid y number: '.a:y
+    endif
+    if a:speed <# 0
+        throw 's:enemy_new(): invalid speed number: '.a:speed
+    endif
+
+    let dir = [
+    \   s:DIR_UP,
+    \   s:DIR_RIGHT,
+    \   s:DIR_DOWN,
+    \   s:DIR_LEFT
+    \][s:rand(4)]
+    return extend(deepcopy(s:enemy), {
+    \   'x': a:x,
+    \   'y': a:y,
+    \   'speed': a:speed,
+    \   'speed_counter': 0,
+    \   'move_dir': dir,
+    \}, 'force')
+endfunction
+
+
 
 function! s:main_loop()
     let b:pacman.previous_changedtick =
