@@ -217,6 +217,7 @@ function! s:initialize_field()
                 let s:field.feed_num += 1
             elseif s:field.map[y][x] ==# s:CHAR_ENEMY
                 call s:field_register_enemy(s:enemy_new(x, y, 1))
+                call s:field_set_char(s:CHAR_FREE_SPACE, x, y)
             endif
         endfor
     endfor
