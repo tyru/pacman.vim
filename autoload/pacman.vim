@@ -336,6 +336,12 @@ let s:state_table.main = s:create_table({
 \   'move_count': 0,
 \   'left_time': 999,
 \   'moving_to_next_stage': 0,
+\   'pressing_keys': {
+\       s:DIR_DOWN  : 0,
+\       s:DIR_UP    : 0,
+\       s:DIR_LEFT  : 0,
+\       s:DIR_RIGHT : 0,
+\   },
 \})
 function! s:state_table.main.func()
     if self.moving_to_next_stage
@@ -354,8 +360,37 @@ function! s:state_table.main.func()
         return
     endif
     let self.left_time -= 1
+
+    " Move current position.
+    call self.move()
+
     " Draw a field.
     call self.draw_field()
+endfunction
+function! s:state_table.main.move()
+    let [lnum, col] = [line('.'), col('.')]
+
+    if self.pressing_keys[s:DIR_DOWN]
+        let lnum += 1
+        let self.pressing_keys[s:DIR_DOWN] = 0
+    endif
+
+    if self.pressing_keys[s:DIR_LEFT]
+        let col -= 1
+        let self.pressing_keys[s:DIR_LEFT] = 0
+    endif
+
+    if self.pressing_keys[s:DIR_RIGHT]
+        let col += 1
+        let self.pressing_keys[s:DIR_RIGHT] = 0
+    endif
+
+    if self.pressing_keys[s:DIR_UP]
+        let lnum -= 1
+        let self.pressing_keys[s:DIR_UP] = 0
+    endif
+
+    call cursor(lnum, col)
 endfunction
 function! s:state_table.main.draw_field()
     " TODO: Draw only changed point(s)
@@ -387,8 +422,11 @@ function! s:state_table.main.on_key(key)
 
     let mark_type = s:get_mark_type(line[coord.x])
     if mark_type ==# s:MARK_FREE_SPACE
-        " Move cursor.
-        return a:key
+        " Set the flag of a:key
+        if has_key(self.pressing_keys, a:key)
+            let self.pressing_keys[a:key] = 1
+        endif
+        return ''
     elseif mark_type ==# s:MARK_FEED
         " Ate it. Mark here as a free space...
         call s:field_set_char(s:CHAR_FREE_SPACE, coord.x, coord.y)
